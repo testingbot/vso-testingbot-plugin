@@ -1,0 +1,42 @@
+{
+  "name": "vso-testingbot-plugin",
+  "version": "0.2.2",
+  "description": "TestingBot integeration with Visual Studio Online",
+  "scripts": {
+    "package": "NODE_ENV=production gulp package"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/testingbot/vso-testingbot-plugin"
+  },
+  "author": "TestingBot <info@testingbot.com>",
+  "license": "MIT",
+  "dependencies": {
+    "babel-polyfill": "^6.16.0",
+    "text-encoding": "^0.6.1",
+    "vss-web-extension-sdk": "^1.106.0",
+    "whatwg-fetch": "^2.0.0"
+  },
+  "devDependencies": {
+    "babel-core": "^6.3.15",
+    "babel-eslint": "^7.1.0",
+    "babel-loader": "^6.2.0",
+    "babel-plugin-transform-async-to-generator": "^6.16.0",
+    "babel-plugin-transform-es2015-modules-amd": "^6.3.13",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-preset-stage-0": "^6.3.13",
+    "babelify": "^7.2.0",
+    "del": "^2.2.0",
+    "eslint": "^4.18.2",
+    "gulp": "^3.9.0",
+    "gulp-copy": "0.0.2",
+    "gulp-help": "^1.6.1",
+    "gulp-json-transform": "^0.4.2",
+    "gulp-jsonlint": "^1.1.2",
+    "gulp-plumber": "^1.1.0",
+    "run-sequence": "^1.1.5",
+    "tfx-cli": "^0.7.8",
+    "vinyl-named": "^1.1.0",
+    "webpack-stream": "^3.2.0"
+  }
+}

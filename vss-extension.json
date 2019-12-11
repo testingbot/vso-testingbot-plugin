@@ -1,0 +1,99 @@
+{
+  "manifestVersion": 1,
+  "id": "testingbot-tasks",
+  "name": "TestingBot for Visual Studio Team Services",
+  "version": "0.1.0",
+  "publisher": "testingbot",
+  "public": true,
+  "description": "Integrate TestingBot's Automated Testing with VSTS",
+  "categories": ["Azure Pipelines", "Azure Test Plans"],
+  "content": {
+    "details": {
+      "path": "overview.md"
+    }
+  },
+  "links": {
+    "home": { "uri": "https://testingbot.com" },
+    "gettingstarted": { "uri": "https://testingbot.com/signup?utm_source=vsip" },
+    "learn": { "uri": "https://testingbot.com/support" },
+    "issues": { "uri": "https://testingbot.com/support" },
+    "support": { "uri": "https://testingbot.com/support" },
+    "license": { "uri": "https://testingbot.com/terms" },
+    "repository": { "uri": "https://github.com/testingbot/vso-testingbot-plugin" }
+  },
+  "icons": {
+    "default": "images/testingbot-icon.png"
+  },
+  "files": [
+    { "path": "images", "addressable": true },
+    { "path": "tb-main" },
+    { "path": "tb-stop-tunnel" },
+    { "path": "tb-build-info", "addressable": true },
+    { "path": "lib", "addressable": true }
+
+  ],
+  "scopes": [ "vso.build_execute", "vso.test", "vso.test_write", "vso.serviceendpoint_manage" ],
+  "targets": [
+      {
+        "id": "Microsoft.VisualStudio.Services"
+      }
+  ],
+  "contributions": [
+    {
+      "id": "tb-main",
+      "type": "ms.vss-distributed-task.task",
+      "targets": [ "ms.vss-distributed-task.tasks" ],
+      "properties": { "name": "tb-main" }
+    },
+    {
+      "id": "tb-stop-tunnel",
+      "type": "ms.vss-distributed-task.task",
+      "targets": [ "ms.vss-distributed-task.tasks" ],
+      "properties": { "name": "tb-stop-tunnel" }
+    },
+    {
+      "id": "tb-endpoint-type",
+      "description": "TestingBot Credentials",
+      "type": "ms.vss-endpoint.service-endpoint-type",
+      "targets": [ "ms.vss-endpoint.endpoint-types" ],
+      "properties": {
+        "name": "testingbot",
+        "displayName": "TestingBot Credentials",
+        "url": "https://api.testingbot.com/v1/",
+        "dataSources": [
+          {
+              "resultSelector": "jsonpath:$",
+              "name": "getBuildFullJobs",
+              "endpointUrl": "https://api.testingbot.com/v1/builds/{{build}}"
+          }
+        ],
+        "authenticationSchemes": [
+          {
+            "type": "ms.vss-endpoint.endpoint-auth-scheme-basic"
+          }
+        ]
+      }
+    },
+    {
+      "id": "build-info-tab",
+      "type": "ms.vss-build-web.build-results-tab",
+      "description": "Build Results View",
+      "targets": [
+          "ms.vss-build-web.build-results-view"
+      ],
+      "properties": {
+          "name": "TestingBot",
+          "uri": "tb-build-info/infoTab.html"
+      }
+    },
+    {
+      "id": "embed-dialog",
+      "type": "ms.vss-web.control",
+      "description": "Embed Dialog",
+      "targets": [],
+      "properties": {
+          "uri": "tb-build-info/embedDialog.html?url={{url}}"
+      }
+    }
+  ]
+}
