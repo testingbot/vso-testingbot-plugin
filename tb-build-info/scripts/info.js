@@ -193,6 +193,90 @@ function md5cycle(x, k) {
   }
   }
 
+const getBuildResponse = async function (buildInformation, offset) {
+  const json = await taskAgentRestClient.executeServiceEndpointRequest({
+      'dataSourceDetails': {
+        dataSourceName: 'getBuildFullJobs',
+        headers: {
+          name: 'Authorization',
+          value: 'Basic ' + Buffer.from(buildInformation.TB_KEY + ':' + buildInformation.TB_SECRET).toString('base64'),
+        },
+        parameters: {
+          build: buildInformation.TB_BUILD_NAME,
+          offset: offset,
+        }
+      }
+    },
+    webContext.project.id,
+    buildInformation.CONNECTED_SERVICE_NAME
+  )
+  
+  return JSON.parse(json.result[0]);
+}
+
+const renderResults = function (buildInformation, buildFullJobs, buildFullMeta, currentPage) {
+  const $table = $('<table>');
+  $table.css('min-width', '800px');
+  $table.append('<thead><tr><th align="left">Test Name</th><th align="left">OS/Browser</th><th align="left">Pass/Fail</th></tr></thead>');
+
+  const $footer = $('<ul style="padding-left: 0">');
+  if (buildFullMeta && buildFullMeta.count < buildFullMeta.total) {
+    let paginationCount = buildFullMeta.count
+    for (let i = 0; i < buildFullMeta.total; i += paginationCount) {
+      if (i === currentPage) {
+        $footer.append($('<li style="display: inline; margin-right: 8px">' + ((i + paginationCount) / paginationCount) + '</li>'))
+        continue;
+      }
+      $footer.append($('<li style="display: inline; margin-right: 8px">')
+        .append($('<a>')
+        .attr('href', '#')
+        .text((i + paginationCount) / paginationCount)
+        .click(async function(e) {
+          e.preventDefault();
+          const buildFullResponse = await getBuildResponse(buildInformation, i);
+          const buildFullJobs = buildFullResponse.data;
+          const buildFullMeta = buildFullResponse.meta;
+
+          renderResults(buildInformation, buildFullJobs, buildFullMeta, i);
+        })));
+    }
+  }
+
+  buildFullJobs.forEach(job => {
+    const auth = md5(buildInformation.TB_KEY + ':' + buildInformation.TB_SECRET + ':' + job.session_id);
+    const $tr = $('<tr>');
+    $tr.append($('<td>').append(
+      $('<a>')
+        .attr('href', '#')
+        .text(job.name)
+        .click(function(e) {
+          e.preventDefault();
+          var dialogOptions = {
+            title: 'Test Information',
+            width: 1000,
+            height: 700,
+            urlReplacementObject: {
+              url: encodeURIComponent('https://testingbot.com/mini/' + job.session_id + '?auth=' + auth)
+            }
+          };
+          VSS.getService(VSS.ServiceIds.Dialog).then(function(dialogService) {
+            var extensionCtx = VSS.getExtensionContext();
+            var contributionId = extensionCtx.publisherId + '.' + extensionCtx.extensionId + '.embed-dialog';
+            dialogService.openDialog(contributionId, dialogOptions);
+          });
+        })
+    ));
+    $tr.append($('<td>').text(job.os + ' ' + job.browser));
+    $tr.append($('<td>').text(job.success ? "Passed" : "Failed"));
+    $table.append($tr);
+  });
+
+  const $buildinfo = $('.build-info').empty();
+  $buildinfo.css('height','400px');
+  $buildinfo.css('overflow','auto');
+  $buildinfo.append('<h2>TestingBot results (' + buildFullMeta.total + ' tests)</h2>').append($table).append($footer);
+}
+
 sharedConfig.onBuildChanged(async function(build) {
   try {
     const taskAttachments = await taskRestClient.getPlanAttachments(
@@ -219,60 +303,11 @@ sharedConfig.onBuildChanged(async function(build) {
       .then(arrayBuffer => new window.TextDecoder('UTF-8').decode(arrayBuffer))
       .then(str => JSON.parse(str));
 
-    const buildFullJobs = await taskAgentRestClient.executeServiceEndpointRequest(
-      {
-        'dataSourceDetails': {
-          dataSourceName: 'getBuildFullJobs',
-          headers: {
-            name: 'Authorization',
-            value: 'Basic ' + Buffer.from(buildInformation.TB_KEY + ':' + buildInformation.TB_SECRET).toString('base64'),
-          },
-          parameters: {
-            build: buildInformation.TB_BUILD_NAME
-          }
-        }
-      },
-      webContext.project.id,
-      buildInformation.CONNECTED_SERVICE_NAME
-    ).then(result => {
-      return JSON.parse(result.result[0]).data;
-    })
-      
-    const $table = $('<table>');
-    $table.css('min-width', '800px');
-    $table.append('<thead><tr><th align="left">Test Name</th><th align="left">OS/Browser</th><th align="left">Pass/Fail</th></tr></thead>');
-    buildFullJobs.forEach(job => {
-      const auth = md5(buildInformation.TB_KEY + ':' + buildInformation.TB_SECRET + ':' + job.session_id);
-      const $tr = $('<tr>');
-      $tr.append($('<td>').append(
-        $('<a>')
-          .attr('href', '#')
-          .text(job.name)
-          .click(function(e) {
-            e.preventDefault();
-            var dialogOptions = {
-              title: 'Test Information',
-              width: 1000,
-              height: 700,
-              urlReplacementObject: {
-                url: encodeURIComponent('https://testingbot.com/mini/' + job.session_id + '?auth=' + auth)
-              }
-            };
-            VSS.getService(VSS.ServiceIds.Dialog).then(function(dialogService) {
-              var extensionCtx = VSS.getExtensionContext();
-              var contributionId = extensionCtx.publisherId + '.' + extensionCtx.extensionId + '.embed-dialog';
-              dialogService.openDialog(contributionId, dialogOptions);
-            });
-          })
-      ));
-      $tr.append($('<td>').text(job.os + ' ' + job.browser));
-      $tr.append($('<td>').text(job.success ? "Passed" : "Failed"));
-      $table.append($tr);
-    });
-    const $buildinfo = $('.build-info').empty();
-    $buildinfo.css('height','400px');
-    $buildinfo.css('overflow','auto');
-    $buildinfo.append('<h2>TestingBot results</h2>').append($table);
+    const buildFullResponse = await getBuildResponse(buildInformation, 0)
+    const buildFullJobs = buildFullResponse.data;
+    const buildFullMeta = buildFullResponse.meta;
+
+    renderResults(buildInformation, buildFullJobs, buildFullMeta, 0)
   } catch (err) {
     console.error('error', err);
   }

@@ -64,7 +64,7 @@
           {
               "resultSelector": "jsonpath:$",
               "name": "getBuildFullJobs",
-              "endpointUrl": "https://api.testingbot.com/v1/builds/{{build}}"
+              "endpointUrl": "https://api.testingbot.com/v1/builds/{{build}}?offset={{offset}}"
           }
         ],
         "authenticationSchemes": [

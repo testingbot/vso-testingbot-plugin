@@ -1,6 +1,6 @@
 {
   "name": "vso-testingbot-plugin",
-  "version": "0.2.2",
+  "version": "0.2.7",
   "description": "TestingBot integeration with Visual Studio Online",
   "scripts": {
     "package": "NODE_ENV=production gulp package"
