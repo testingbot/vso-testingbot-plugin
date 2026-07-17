@@ -10,11 +10,25 @@ _Date: 2026-07-17. Applies to repo `vso-testingbot-plugin` (marketplace: `testin
 >   drift resolved via `scripts/stamp-version.js`, immediate correctness bugs fixed.
 > - **Phase 2 — DONE (PR #18):** tasks rewritten in TypeScript, runtime tunnel via
 >   `testingbot-tunnel-launcher` (jar deleted), secret pipeline variables, tests.
-> - **Phase 3 — PENDING:** results-tab / SDK rewrite, including moving the `/mini`
->   URL signing server-side so the secret leaves the browser (finding #1).
+> - **Phase 3 — PARTIAL (PR #19):** results-tab hardening — unpkg.com CDN script
+>   removed, pagination + error-state bugs fixed, `embedDialog` URL allowlisted;
+>   manifest rebranded and scopes cut to `vso.build` + `vso.serviceendpoint_query`.
+>   **Still PENDING:** (a) moving the `/mini` share-URL signing server-side so the
+>   secret leaves the browser (finding #1) — **blocked**: the TestingBot public
+>   API exposes no endpoint that returns the `md5(key:secret:session_id)` share
+>   hash, so keeping the embedded `/mini` viewer requires the secret in the
+>   browser until TestingBot adds such an endpoint; (b) the `vss-web-extension-sdk`
+>   → `azure-devops-extension-sdk` / React port (large, and the old SDK keeps
+>   working, so deferred to its own PR).
 > - **Phase 4 — PENDING:** CI/CD, lint, publishing.
 >
 > Items marked "PENDING" below are the genuinely outstanding work.
+>
+> **Release note for PR #19:** the scope reduction and tab changes are
+> browser/manifest-side and cannot be exercised outside a live Azure DevOps org.
+> Smoke-test the results tab (attachment load + API call) with the packaged vsix
+> before publishing; the reduced scopes force installed users to re-authorize on
+> upgrade.
 
 ## 1. Executive summary
 
