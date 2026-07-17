@@ -7,7 +7,14 @@ const path = require('path');
 const root = path.join(__dirname, '..');
 const distDir = path.join(root, 'dist');
 const version = require(path.join(root, 'package.json')).version;
-const [major, minor, patch] = version.split('.');
+
+// Require an exact numeric major.minor.patch — task.json versions must be
+// integers and a malformed/prerelease value would silently produce a broken vsix.
+const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(version);
+if (!match) {
+  throw new Error(`package.json version "${version}" is not a plain major.minor.patch version.`);
+}
+const [, major, minor, patch] = match.map(Number);
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -23,10 +30,13 @@ const manifest = readJson(manifestPath);
 manifest.version = version;
 writeJson(manifestPath, manifest);
 
-// Each task: { Major, Minor, Patch } object.
+// Each task: { Major, Minor, Patch } object. A missing manifest means the build
+// copy step did not run correctly, so fail instead of shipping an unstamped task.
 for (const task of ['tb-main', 'tb-stop-tunnel']) {
   const taskPath = path.join(distDir, task, 'task.json');
-  if (!fs.existsSync(taskPath)) continue;
+  if (!fs.existsSync(taskPath)) {
+    throw new Error(`Expected task manifest is missing: ${taskPath}. Did the build copy step run?`);
+  }
   const def = readJson(taskPath);
   def.version = { Major: major, Minor: minor, Patch: patch };
   writeJson(taskPath, def);

@@ -70,12 +70,15 @@ service endpoint. The tab never sees raw credentials outside that attachment.
 
 ## Task vs. web code — two different runtimes
 
-- **Task code** (`tb-main/testingbot.js`, `tb-stop-tunnel/sample.js`) runs on the
-  build agent under the `Node20_1` handler. It uses `azure-pipelines-task-lib/task`
-  (`tl.getInput`, `tl.getBoolInput`, `tl.setVariable`, `tl.command`). `tb-main`
-  declares its runtime deps in `tb-main/package.json`; they are NOT committed —
-  the `deps` build step installs them into `dist/tb-main/node_modules` so the
-  packaged task is self-contained. `tb-stop-tunnel` is dependency-free.
+- **Task code** runs on the build agent under the `Node20_1` handler.
+  - `tb-main/testingbot.js` uses `azure-pipelines-task-lib/task` (`tl.getInput`,
+    `tl.getBoolInput`, `tl.setVariable`, `tl.command`). It declares its runtime
+    deps in `tb-main/package.json`; they are NOT committed — the `deps` build
+    step installs them into `dist/tb-main/node_modules` so the packaged task is
+    self-contained.
+  - `tb-stop-tunnel/sample.js` reads `TB_TUNNEL_PID` directly from `process.env`
+    and calls `process.kill`. It must stay **dependency-free** — do not add
+    `azure-pipelines-task-lib` or any other dependency to the stop task.
 
 - **Web/tab code** (`tb-build-info/scripts/*.js`) runs in the browser inside Azure
   DevOps and is bundled by webpack (`webpack.config.js`) with AMD output and

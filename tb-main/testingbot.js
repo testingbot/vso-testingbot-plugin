@@ -43,7 +43,7 @@ var main = function main(cb) {
   };
 
   var getEndpointDetails = function getEndpointDetails(endpointInputFieldName) {
-    var errorMessage = 'Could not decode the credentials endpoint. Please ensure you are running the latest agent (min version 0.3.0)';
+    var errorMessage = 'Could not decode the credentials endpoint. Please ensure you are running an agent that meets the minimum version (3.232.1)';
     if (!tl.getEndpointUrl) {
       throw new Error(errorMessage);
     }
