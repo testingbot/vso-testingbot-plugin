@@ -209,7 +209,7 @@ const getBuildResponse = async function (buildInformation, offset) {
     webContext.project.id,
     buildInformation.CONNECTED_SERVICE_NAME
   )
-
+  
   return JSON.parse(json.result[0]);
 }
 
