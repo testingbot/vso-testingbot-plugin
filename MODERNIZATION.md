@@ -20,7 +20,12 @@ _Date: 2026-07-17. Applies to repo `vso-testingbot-plugin` (marketplace: `testin
 >   browser until TestingBot adds such an endpoint; (b) the `vss-web-extension-sdk`
 >   → `azure-devops-extension-sdk` / React port (large, and the old SDK keeps
 >   working, so deferred to its own PR).
-> - **Phase 4 — PENDING:** CI/CD, lint, publishing.
+> - **Phase 4 — MOSTLY DONE (PR #20):** GitHub Actions build workflow (lint +
+>   tests + package on every PR), ESLint flat config wired up (`npm run lint`),
+>   CodeQL workflow fixed (v3 actions), dead Jenkinsfile removed, README usage
+>   quick-start. A tag-triggered publish workflow is included but needs a
+>   maintainer to add the `AZURE_DEVOPS_MARKETPLACE_PAT` secret (and, before
+>   2026-12-01, to move to Entra/OIDC auth).
 >
 > Items marked "PENDING" below are the genuinely outstanding work.
 >
