@@ -213,30 +213,41 @@ const getBuildResponse = async function (buildInformation, offset) {
   return JSON.parse(json.result[0]);
 }
 
-const renderResults = function (buildInformation, buildFullJobs, buildFullMeta, currentPage) {
+const renderError = function (message) {
+  const $buildinfo = $('.build-info').empty();
+  $buildinfo.append($('<h2>').text(message));
+};
+
+// pageSize is the stable number of results per API page, captured once from the
+// first (offset 0) response. Using the *current* page's count as the divisor
+// corrupts the page links on a partial last page, and a count of 0 would make
+// the pagination loop spin forever.
+const renderResults = function (buildInformation, buildFullJobs, buildFullMeta, currentOffset, pageSize) {
   const $table = $('<table>');
   $table.css('min-width', '800px');
   $table.append('<thead><tr><th align="left">Test Name</th><th align="left">OS/Browser</th><th align="left">Pass/Fail</th></tr></thead>');
 
   const $footer = $('<ul style="padding-left: 0">');
-  if (buildFullMeta && buildFullMeta.count < buildFullMeta.total) {
-    let paginationCount = buildFullMeta.count
-    for (let i = 0; i < buildFullMeta.total; i += paginationCount) {
-      if (i === currentPage) {
-        $footer.append($('<li style="display: inline; margin-right: 8px">' + ((i + paginationCount) / paginationCount) + '</li>'))
+  if (pageSize > 0 && buildFullMeta && buildFullMeta.total > pageSize) {
+    for (let offset = 0; offset < buildFullMeta.total; offset += pageSize) {
+      const pageNumber = (offset / pageSize) + 1;
+      if (offset === currentOffset) {
+        $footer.append($('<li style="display: inline; margin-right: 8px">').text(pageNumber));
         continue;
       }
       $footer.append($('<li style="display: inline; margin-right: 8px">')
         .append($('<a>')
         .attr('href', '#')
-        .text((i + paginationCount) / paginationCount)
+        .text(pageNumber)
         .click(async function(e) {
           e.preventDefault();
-          const buildFullResponse = await getBuildResponse(buildInformation, i);
-          const buildFullJobs = buildFullResponse.data;
-          const buildFullMeta = buildFullResponse.meta;
-
-          renderResults(buildInformation, buildFullJobs, buildFullMeta, i);
+          try {
+            const buildFullResponse = await getBuildResponse(buildInformation, offset);
+            renderResults(buildInformation, buildFullResponse.data, buildFullResponse.meta, offset, pageSize);
+          } catch (err) {
+            console.error('error loading page', err);
+            renderError('Could not load TestingBot results for this page.');
+          }
         })));
     }
   }
@@ -278,6 +289,11 @@ const renderResults = function (buildInformation, buildFullJobs, buildFullMeta, 
 
 sharedConfig.onBuildChanged(async function(build) {
   try {
+    if (!build || !build.orchestrationPlan) {
+      renderError('No test results found');
+      return;
+    }
+
     const taskAttachments = await taskRestClient.getPlanAttachments(
       webContext.project.id,
       'build',
@@ -286,8 +302,7 @@ sharedConfig.onBuildChanged(async function(build) {
     );
 
     if (taskAttachments.length < 1) {
-      const $buildinfo = $('.build-info').empty();
-      $buildinfo.append('<h2>No test results found</h2>');
+      renderError('No test results found');
       return;
     }
     const buildInformation = await taskRestClient.getAttachmentContent(
@@ -306,8 +321,12 @@ sharedConfig.onBuildChanged(async function(build) {
     const buildFullJobs = buildFullResponse.data;
     const buildFullMeta = buildFullResponse.meta;
 
-    renderResults(buildInformation, buildFullJobs, buildFullMeta, 0)
+    // Capture the page size once, from the first response, and thread it through
+    // so pagination stays stable regardless of the current page's count.
+    const pageSize = buildFullMeta ? buildFullMeta.count : 0;
+    renderResults(buildInformation, buildFullJobs, buildFullMeta, 0, pageSize)
   } catch (err) {
     console.error('error', err);
+    renderError('Could not load TestingBot results.');
   }
 });

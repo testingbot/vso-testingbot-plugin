@@ -1,11 +1,11 @@
 {
   "manifestVersion": 1,
   "id": "testingbot-tasks",
-  "name": "TestingBot for Visual Studio Team Services",
+  "name": "TestingBot for Azure DevOps",
   "version": "0.1.0",
   "publisher": "testingbot",
   "public": true,
-  "description": "Integrate TestingBot's Automated Testing with VSTS",
+  "description": "Integrate TestingBot's automated testing with Azure DevOps",
   "categories": ["Azure Pipelines", "Azure Test Plans"],
   "content": {
     "details": {
@@ -32,7 +32,7 @@
     { "path": "lib", "addressable": true }
 
   ],
-  "scopes": [ "vso.build_execute", "vso.test", "vso.test_write", "vso.serviceendpoint_manage" ],
+  "scopes": [ "vso.build", "vso.serviceendpoint_query" ],
   "targets": [
       {
         "id": "Microsoft.VisualStudio.Services"
