@@ -1,0 +1,11 @@
+{
+  "name": "tb-stop-tunnel",
+  "version": "0.2.7",
+  "description": "Stop TestingBot Tunnel task",
+  "private": true,
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "azure-pipelines-task-lib": "^5.277.0"
+  }
+}

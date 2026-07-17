@@ -4,11 +4,15 @@
   "friendlyName": "Stop TestingBot Tunnel",
   "description": "Stop TestingBot Tunnel",
   "author": "TestingBot",
-  "helpMarkDown": "",
+  "helpMarkDown": "Stops the TestingBot Tunnel started by the TestingBot Configuration task.",
   "category": "Test",
   "visibility": [
     "Build",
     "Release"
+  ],
+  "runsOn": [
+    "Agent",
+    "DeploymentGroup"
   ],
   "demands": [],
   "version": {
@@ -17,11 +21,19 @@
     "Patch": "0"
   },
   "minimumAgentVersion": "3.232.1",
-  "instanceNameFormat": "Stop TestingBot Tunnel $(message)",
+  "instanceNameFormat": "Stop TestingBot Tunnel",
   "inputs": [],
+  "restrictions": {
+    "commands": {
+      "mode": "restricted"
+    },
+    "settableVariables": {
+      "allowed": []
+    }
+  },
   "execution": {
     "Node20_1": {
-      "target": "sample.js",
+      "target": "index.js",
       "argumentFormat": ""
     }
   }

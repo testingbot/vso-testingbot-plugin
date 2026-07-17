@@ -3,9 +3,10 @@
   "version": "0.2.7",
   "description": "TestingBot Configuration task",
   "private": true,
-  "main": "testingbot.js",
+  "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "azure-pipelines-task-lib": "^5.277.0"
+    "azure-pipelines-task-lib": "^5.277.0",
+    "testingbot-tunnel-launcher": "^1.1.18"
   }
 }

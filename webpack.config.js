@@ -18,6 +18,18 @@ const vssExternals = [
   'React'
 ];
 
+// The tasks are TypeScript: tsc emits index.js in-place, which this copy step
+// picks up. The .ts sources, tests, tsconfig and dev node_modules are excluded;
+// the production node_modules are installed into dist/ afterwards.
+const taskIgnore = [
+  '**/node_modules/**',
+  '**/.DS_Store',
+  '**/*.ts',
+  '**/tsconfig.json',
+  '**/tests/**',
+  '**/*.js.map'
+];
+
 module.exports = {
   target: 'web',
   entry: {
@@ -59,12 +71,12 @@ module.exports = {
         {
           from: 'tb-main',
           to: 'tb-main',
-          globOptions: { ignore: ['**/node_modules/**', '**/.DS_Store'] }
+          globOptions: { ignore: taskIgnore }
         },
         {
           from: 'tb-stop-tunnel',
           to: 'tb-stop-tunnel',
-          globOptions: { ignore: ['**/.DS_Store'] }
+          globOptions: { ignore: taskIgnore }
         },
         {
           // Everything in tb-build-info except the scripts webpack bundles above.
