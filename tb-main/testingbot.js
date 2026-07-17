@@ -1,5 +1,5 @@
 /* global Promise */
-var tl = require('vsts-task-lib');
+var tl = require('azure-pipelines-task-lib/task');
 var fs = require('fs');
 var path = require('path');
 var spawn = require('child_process').spawn;
@@ -17,8 +17,12 @@ var main = function main(cb) {
     var paramValue = null;
     var auth = tl.getEndpointAuthorization(endpoint, false);
 
+    if (!auth) {
+      throw new Error('Could not read the TestingBot credentials endpoint authorization. Please check the service connection.');
+    }
+
     if (auth.scheme !== 'UsernamePassword') {
-      throw new Error('The authorization scheme ' + auth.scheme + ' is not supported for a SonarQube endpoint. Please use a username and a password.');
+      throw new Error('The authorization scheme ' + auth.scheme + ' is not supported for the TestingBot endpoint. Please use a username and a password.');
     }
 
     var parameters = Object.getOwnPropertyNames(auth['parameters']);
@@ -64,29 +68,32 @@ var main = function main(cb) {
   tl.setVariable('TB_API_ENDPOINT', 'api.testingbot.com');
   tl.setVariable('SELENIUM_HOST', 'hub.testingbot.com');
   tl.setVariable('SELENIUM_PORT', '80');
-  tl.setVariable('TB_BUILD_NAME', [
-    tl.getVariable('BUILD_DEFINITIONNAME'),
-    tl.getVariable('BUILD_BUILDID')
-  ].join('_').replace(/ /g, '_'));
+  // Build runs expose BUILD_*; release runs expose RELEASE_* instead. Fall back
+  // so the build name is never a bare "_" join of undefined parts.
+  var buildName = [
+    tl.getVariable('BUILD_DEFINITIONNAME') || tl.getVariable('RELEASE_DEFINITIONNAME'),
+    tl.getVariable('BUILD_BUILDID') || tl.getVariable('RELEASE_RELEASEID')
+  ].filter(Boolean).join('_').replace(/ /g, '_');
+  tl.setVariable('TB_BUILD_NAME', buildName);
   cb(credentials);
 };
 
 var startTunnel = function startTunnel(credentials, resolve, tunnelOptions) {
   var self_path = __dirname;
   var tunnel_path = path.join(self_path, 'tunnel');
-  var tunnel_bin = path.join(tunnel_path, '2.30.jar');
+  var tunnel_jar = path.join(tunnel_path, '2.30.jar');
 
-  console.log('Running TestingBot Tunnel: ', tunnel_bin);
+  console.log('Running TestingBot Tunnel: ', tunnel_jar);
 
   var pid_path = path.join((process.env.BUILD_STAGINGDIRECTORY || self_path), 'testingbot-tunnel.pid');
   tl.setVariable('TB_TUNNEL_PID_PATH', pid_path);
   console.log('Setting PID path', pid_path);
 
-  var tunnel_bin = spawn(
+  var tunnel_process = spawn(
     'java',
     [
       '-jar',
-      tunnel_bin,
+      tunnel_jar,
       credentials.key,
       credentials.secret
     ].concat(tunnelOptions.split(' ')),
@@ -96,7 +103,7 @@ var startTunnel = function startTunnel(credentials, resolve, tunnelOptions) {
     }
   );
 
-  tl.setVariable('TB_TUNNEL_PID', 'pid_' + tunnel_bin.pid);
+  tl.setVariable('TB_TUNNEL_PID', 'pid_' + tunnel_process.pid);
 
   var lineEmitter = new EventEmitter();
   lineEmitter.on('stdout', function(line) {
@@ -115,7 +122,7 @@ var startTunnel = function startTunnel(credentials, resolve, tunnelOptions) {
   var dataHolders = {};
   ['stdout', 'stderr'].forEach(function(channel) {
     dataHolders[channel] = [];
-    tunnel_bin[channel].on('data', function (data) {
+    tunnel_process[channel].on('data', function (data) {
       data.toString().split('').forEach(function(char) {
         if (char === '\n' || char === '\r') {
           if (dataHolders[channel].length !== 0) {
@@ -129,16 +136,15 @@ var startTunnel = function startTunnel(credentials, resolve, tunnelOptions) {
     });
   });
 
-  tunnel_bin.on('close', function(code) {
+  tunnel_process.on('close', function(code) {
     return process.exit(code);
   });
 };
 
 main(function(credentials) {
-  var shouldStartTunnel = JSON.parse(tl.getInput('tbTunnel'));
+  var shouldStartTunnel = tl.getBoolInput('tbTunnel', false);
   var tunnelOptions = tl.getInput('tbTunnelOptions');
-  if (tunnelOptions === null) {
-    console.log('tunnelOptions = null')
+  if (!tunnelOptions) {
     tunnelOptions = '';
   }
   new Promise(function(resolve) {
