@@ -4,11 +4,15 @@
   "friendlyName": "TestingBot Configuration",
   "description": "TestingBot Configuration for Web and Device Application Testing",
   "author": "TestingBot",
-  "helpMarkDown": "",
+  "helpMarkDown": "Exports your TestingBot credentials as pipeline variables and optionally starts TestingBot Tunnel.",
   "category": "Test",
   "visibility": [
     "Build",
     "Release"
+  ],
+  "runsOn": [
+    "Agent",
+    "DeploymentGroup"
   ],
   "demands": [],
   "version": {
@@ -17,7 +21,15 @@
     "Patch": "0"
   },
   "minimumAgentVersion": "3.232.1",
-  "instanceNameFormat": "Manage TestingBot Credentials",
+  "instanceNameFormat": "Configure TestingBot",
+  "groups": [
+    {
+      "name": "tunnel",
+      "displayName": "TestingBot Tunnel",
+      "isExpanded": false,
+      "visibleRule": "tbTunnel = true"
+    }
+  ],
   "inputs": [
     {
       "name": "connectedServiceName",
@@ -25,28 +37,116 @@
       "label": "TestingBot Credentials",
       "defaultValue": "",
       "required": true,
-      "helpMarkDown": "TestingBot Account Details"
+      "helpMarkDown": "The TestingBot service connection holding your key and secret."
     },
     {
       "name": "tbTunnel",
       "type": "boolean",
-      "label": "TestingBot Tunnel",
+      "label": "Start TestingBot Tunnel",
       "defaultValue": false,
       "required": false,
-      "helpMarkDown": "TestingBot Tunnel"
+      "helpMarkDown": "Download and start TestingBot Tunnel so tests can reach applications behind your firewall. Requires Java 11+ on the agent. Add the 'Stop TestingBot Tunnel' task after your tests."
+    },
+    {
+      "name": "tunnelIdentifier",
+      "type": "string",
+      "label": "Tunnel identifier",
+      "defaultValue": "",
+      "required": false,
+      "groupName": "tunnel",
+      "helpMarkDown": "Unique identifier for this tunnel. Defaults to azure-<BuildId>-<attempt>."
+    },
+    {
+      "name": "sePort",
+      "type": "string",
+      "label": "Selenium relay port",
+      "defaultValue": "",
+      "required": false,
+      "groupName": "tunnel",
+      "helpMarkDown": "Port the tunnel's Selenium relay listens on (default 4445)."
+    },
+    {
+      "name": "proxy",
+      "type": "string",
+      "label": "Upstream proxy",
+      "defaultValue": "",
+      "required": false,
+      "groupName": "tunnel",
+      "helpMarkDown": "Upstream proxy host and port, e.g. localhost:1234."
+    },
+    {
+      "name": "readyTimeout",
+      "type": "string",
+      "label": "Ready timeout (seconds)",
+      "defaultValue": "",
+      "required": false,
+      "groupName": "tunnel",
+      "helpMarkDown": "How long to wait for the tunnel to become ready (default 90)."
+    },
+    {
+      "name": "sharedTunnel",
+      "type": "boolean",
+      "label": "Share tunnel with team",
+      "defaultValue": false,
+      "required": false,
+      "groupName": "tunnel",
+      "helpMarkDown": "Share this tunnel with other members of your TestingBot team."
+    },
+    {
+      "name": "noBump",
+      "type": "boolean",
+      "label": "Disable SSL bumping",
+      "defaultValue": false,
+      "required": false,
+      "groupName": "tunnel",
+      "helpMarkDown": "Disable the tunnel's SSL bumping/rewriting."
+    },
+    {
+      "name": "noCache",
+      "type": "boolean",
+      "label": "Disable caching",
+      "defaultValue": false,
+      "required": false,
+      "groupName": "tunnel",
+      "helpMarkDown": "Disable the tunnel's caching."
     },
     {
       "name": "tbTunnelOptions",
       "type": "string",
-      "label": "TestingBot Tunnel Options",
+      "label": "Tunnel options (deprecated)",
       "defaultValue": "",
       "required": false,
-      "helpMarkDown": "TestingBot Tunnel Commandline Options"
+      "groupName": "tunnel",
+      "helpMarkDown": "Deprecated and ignored. Use the dedicated tunnel inputs instead."
     }
- ],
+  ],
+  "outputVariables": [
+    { "name": "TB_TUNNEL_PID", "description": "Process id marker of the started tunnel." },
+    { "name": "TB_TUNNEL_IDENTIFIER", "description": "Identifier of the started tunnel." },
+    { "name": "TB_BUILD_NAME", "description": "Build name reported to TestingBot." }
+  ],
+  "restrictions": {
+    "commands": {
+      "mode": "restricted"
+    },
+    "settableVariables": {
+      "allowed": [
+        "TB_KEY",
+        "TESTINGBOT_KEY",
+        "TB_SECRET",
+        "TESTINGBOT_SECRET",
+        "TB_API_ENDPOINT",
+        "SELENIUM_HOST",
+        "SELENIUM_PORT",
+        "TB_BUILD_NAME",
+        "TB_TUNNEL_PID",
+        "TB_TUNNEL_IDENTIFIER"
+      ]
+    }
+  },
   "execution": {
     "Node20_1": {
-      "target": "testingbot.js",
+      "target": "index.js",
       "argumentFormat": ""
     }
   }

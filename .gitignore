@@ -7,8 +7,12 @@ myagent/
 # Serena MCP tooling
 /.serena/
 
-# Compiled TypeScript task output (from the Phase 2 branch; never belongs here)
+# Compiled TypeScript task output (emitted in-place by tsc)
 tb-*/index.js
 tb-*/index.js.map
 tb-*/tests/**/*.js
 tb-*/tests/**/*.js.map
+
+# Test run artifacts (task-lib mock-run / mock-test)
+.taskkey
+tb-*/tests/testingbot.json
