@@ -16,15 +16,15 @@
     "Minor": "2",
     "Patch": "0"
   },
-  "minimumAgentVersion": "1.83.0",
-  "instanceNameFormat": "Manage TestingBot Credentials $(message)",
+  "minimumAgentVersion": "3.232.1",
+  "instanceNameFormat": "Manage TestingBot Credentials",
   "inputs": [
     {
       "name": "connectedServiceName",
       "type": "connectedService:Testingbot",
       "label": "TestingBot Credentials",
       "defaultValue": "",
-      "required": false,
+      "required": true,
       "helpMarkDown": "TestingBot Account Details"
     },
     {
@@ -45,7 +45,7 @@
     }
  ],
   "execution": {
-    "Node": {
+    "Node20_1": {
       "target": "testingbot.js",
       "argumentFormat": ""
     }

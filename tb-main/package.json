@@ -1,0 +1,14 @@
+{
+  "name": "tb-main",
+  "version": "0.2.7",
+  "description": "TestingBot Configuration task",
+  "private": true,
+  "main": "testingbot.js",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "azure-pipelines-task-lib": "^5.277.0"
+  }
+}

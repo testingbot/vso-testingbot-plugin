@@ -1,6 +1,5 @@
 /* eslint-env jquery, browser, es6 */
 /* global VSS */
-require('babel-polyfill');
 const TaskAgentRestClient = require('TFS/DistributedTask/TaskAgentRestClient');
 const TaskRestClient = require('TFS/DistributedTask/TaskRestClient');
 

@@ -1,9 +1,14 @@
 {
   "name": "vso-testingbot-plugin",
   "version": "0.2.7",
-  "description": "TestingBot integeration with Visual Studio Online",
+  "description": "TestingBot integration with Azure DevOps",
   "scripts": {
-    "package": "NODE_ENV=production gulp package"
+    "clean": "rimraf dist Packages",
+    "build": "webpack --mode production",
+    "deps": "node scripts/install-task-deps.js",
+    "stamp": "node scripts/stamp-version.js",
+    "create": "tfx extension create --root dist --manifest-globs vss-extension.json --output-path Packages",
+    "package": "npm run clean && npm run build && npm run deps && npm run stamp && npm run create"
   },
   "repository": {
     "type": "git",
@@ -11,32 +16,16 @@
   },
   "author": "TestingBot <info@testingbot.com>",
   "license": "MIT",
-  "dependencies": {
-    "babel-polyfill": "^6.16.0",
-    "text-encoding": "^0.6.1",
-    "vss-web-extension-sdk": "^1.106.0",
-    "whatwg-fetch": "^2.0.0"
-  },
   "devDependencies": {
-    "babel-core": "^6.3.15",
-    "babel-eslint": "^7.1.0",
-    "babel-loader": "^9.1.2",
-    "babel-plugin-transform-async-to-generator": "^6.16.0",
-    "babel-plugin-transform-es2015-modules-amd": "^6.3.13",
-    "babel-preset-es2015": "^6.3.13",
-    "babel-preset-stage-0": "^6.3.13",
-    "babelify": "^7.2.0",
-    "del": "^2.2.0",
-    "eslint": "^4.18.2",
-    "gulp": "^4.0.2",
-    "gulp-copy": "0.0.2",
-    "gulp-help": "^1.6.1",
-    "gulp-json-transform": "^0.4.2",
-    "gulp-jsonlint": "^1.1.2",
-    "gulp-plumber": "^1.1.0",
-    "run-sequence": "^1.1.5",
-    "tfx-cli": "^0.12.0",
-    "vinyl-named": "^1.1.0",
-    "webpack-stream": "^7.0.0"
+    "@babel/core": "^8.0.1",
+    "@babel/preset-env": "^8.0.2",
+    "babel-loader": "^10.1.1",
+    "buffer": "^6.0.3",
+    "copy-webpack-plugin": "^14.0.0",
+    "rimraf": "^6.1.3",
+    "tfx-cli": "^0.23.4",
+    "vss-web-extension-sdk": "^1.106.0",
+    "webpack": "^5.108.4",
+    "webpack-cli": "^7.2.1"
   }
 }

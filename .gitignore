@@ -1,4 +1,14 @@
-/node_modules
+node_modules/
 Packages/
 dist/
 myagent/
+.DS_Store
+
+# Serena MCP tooling
+/.serena/
+
+# Compiled TypeScript task output (from the Phase 2 branch; never belongs here)
+tb-*/index.js
+tb-*/index.js.map
+tb-*/tests/**/*.js
+tb-*/tests/**/*.js.map
