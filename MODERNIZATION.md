@@ -2,17 +2,31 @@
 
 _Date: 2026-07-17. Applies to repo `vso-testingbot-plugin` (marketplace: `testingbot.testingbot-tasks`, published v0.2.7, ~95 installs, last updated ~Oct 2022)._
 
+> **Status (living document).** The findings below describe the pre-modernization
+> state as originally analyzed; sections are being resolved phase by phase.
+> - **Phase 1 — DONE (PR #17):** clean-checkout packaging restored (npm scripts +
+>   webpack 5, gulp/Travis removed), both tasks on the `Node20_1` handler,
+>   `azure-pipelines-task-lib` 5 with committed `node_modules` deleted, version
+>   drift resolved via `scripts/stamp-version.js`, immediate correctness bugs fixed.
+> - **Phase 2 — DONE (PR #18):** tasks rewritten in TypeScript, runtime tunnel via
+>   `testingbot-tunnel-launcher` (jar deleted), secret pipeline variables, tests.
+> - **Phase 3 — PENDING:** results-tab / SDK rewrite, including moving the `/mini`
+>   URL signing server-side so the secret leaves the browser (finding #1).
+> - **Phase 4 — PENDING:** CI/CD, lint, publishing.
+>
+> Items marked "PENDING" below are the genuinely outstanding work.
+
 ## 1. Executive summary
 
 This extension is a 2016-era fork of Sauce Labs' now-unpublished `vso-sauce-ondemand-plugin`, written in ES5 JavaScript against the deprecated `vss-web-extension-sdk` and a vendored `vsts-task-lib` 1.1.0, with both pipeline tasks on the removed Node 6 `"Node"` execution handler. The build system is unrunnable from a clean checkout: Dependabot bumped gulp to ^4 and webpack-stream to ^7 (webpack 5) without migrating the gulp 3 / webpack 1 code, so `gulp`, `npm run package`, and every CI path fail before producing a `.vsix`. Worst of all, the agent task writes the raw TestingBot API key **and secret** into a plaintext `testingbot.json` build attachment that any user with build-read access can download, and the results tab loads an SRI-less third-party script from unpkg.com into that credential-holding page. All CI (Travis, Jenkinsfile on node:6.6.0, CodeQL v1) is dead.
 
 **Top 5 actions:**
 
-1. **Stop leaking the API secret** — remove `TB_KEY`/`TB_SECRET` from the build attachment (`tb-main/testingbot.js:151-170`) and route all TestingBot API calls through the service-endpoint data source; mark exported variables secret.
-2. **Migrate both tasks to the `Node20_1` handler + `azure-pipelines-task-lib` 5.x** — the bare `"Node"` (Node 6) handler is removed from new agents in November 2026; the extension breaks on schedule without this.
-3. **Replace the broken gulp 3 / webpack 1 / babel 6 toolchain** with TypeScript + webpack 5 + npm scripts (per `microsoft/azure-devops-extension-sample`) so a `.vsix` can be built at all.
-4. **Stop bundling the 2019 tunnel jar** (`tb-main/tunnel/2.30.jar`, internally v2.9, vulnerable Jetty 9.4.12) — use `testingbot-tunnel-launcher` (npm, v1.1.18) to download/cache the current tunnel (v4.8) at runtime.
-5. **Add real CI/CD** — GitHub Actions building the `.vsix` on every PR and publishing to the Marketplace on tag (tfx-cli 0.23.x, Entra/OIDC auth), replacing dead Travis/Jenkins/CodeQL v1 configs.
+1. **Stop leaking the API secret** — remove `TB_KEY`/`TB_SECRET` from the build attachment and route all TestingBot API calls through the service-endpoint data source; mark exported variables secret. _(PARTIAL: secret pipeline variables done in Phase 2; the attachment still carries the credentials so the tab can sign `/mini` share URLs — moving that server-side is **PENDING** in Phase 3.)_
+2. **Migrate both tasks to the `Node20_1` handler + `azure-pipelines-task-lib` 5.x** — the bare `"Node"` (Node 6) handler is removed from new agents in November 2026; the extension breaks on schedule without this. _(DONE — Phase 1/2.)_
+3. **Replace the broken gulp 3 / webpack 1 / babel 6 toolchain** with TypeScript + webpack 5 + npm scripts (per `microsoft/azure-devops-extension-sample`) so a `.vsix` can be built at all. _(DONE — Phase 1 build, Phase 2 TypeScript.)_
+4. **Stop bundling the 2019 tunnel jar** (`tb-main/tunnel/2.30.jar`, internally v2.9, vulnerable Jetty 9.4.12) — use `testingbot-tunnel-launcher` (npm, v1.1.18) to download/cache the current tunnel (v4.8) at runtime. _(DONE — Phase 2.)_
+5. **Add real CI/CD** — GitHub Actions building the `.vsix` on every PR and publishing to the Marketplace on tag (tfx-cli 0.23.x, Entra/OIDC auth), replacing dead Travis/Jenkins/CodeQL v1 configs. _(PENDING — Phase 4.)_
 
 ## 2. Critical bugs & security issues (verified findings)
 

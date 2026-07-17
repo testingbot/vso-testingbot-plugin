@@ -12,7 +12,15 @@ for (const entry of fs.readdirSync(distDir)) {
   if (!entry.startsWith('tb-')) continue;
 
   const taskDir = path.join(distDir, entry);
-  if (!fs.existsSync(path.join(taskDir, 'package.json'))) continue;
+  const pkgPath = path.join(taskDir, 'package.json');
+  if (!fs.existsSync(pkgPath)) continue;
+
+  // A dependency-free task (e.g. tb-stop-tunnel) has nothing to install.
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+  if (!pkg.dependencies || Object.keys(pkg.dependencies).length === 0) {
+    console.log(`No production deps for ${entry}, skipping`);
+    continue;
+  }
 
   const hasLock = fs.existsSync(path.join(taskDir, 'package-lock.json'));
   const args = hasLock

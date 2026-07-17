@@ -82,13 +82,20 @@ service endpoint. The tab never sees raw credentials outside that attachment.
 
 ## Task vs. web code — two different runtimes
 
-- **Task code** (`tb-main/testingbot.js`, `tb-stop-tunnel/sample.js`) runs on the
-  build agent under the `Node20_1` handler. Each is TypeScript (`index.ts`
-  compiled to `index.js` in place) using `azure-pipelines-task-lib/task`
-  (`tl.getInput`, `tl.getBoolInput`, `tl.setVariable`, `tl.setSecret`,
-  `tl.command`, `tl.setResult`). Both tasks declare their runtime deps in their
-  own `package.json`; they are NOT committed — the `deps` build step installs
-  them into `dist/tb-*/node_modules` so each packaged task is self-contained.
+- **Task code** runs on the build agent under the `Node20_1` handler. Both tasks
+  are TypeScript (`index.ts` compiled to `index.js` in place).
+  - `tb-main/index.ts` uses `azure-pipelines-task-lib/task` (`tl.getInput`,
+    `tl.getBoolInput`, `tl.setVariable`, `tl.setSecret`, `tl.command`,
+    `tl.setResult`) and `testingbot-tunnel-launcher`. It declares those runtime
+    deps in `tb-main/package.json`; they are NOT committed — the `deps` build
+    step installs them into `dist/tb-main/node_modules` so the task is
+    self-contained.
+  - `tb-stop-tunnel/index.ts` must stay **dependency-free** — it reads
+    `TB_TUNNEL_PID` directly from `process.env`, calls `process.kill`, and emits
+    the raw `##vso[task.complete …]` logging command itself. Do NOT add
+    `azure-pipelines-task-lib` (or any runtime dependency) to the stop task; its
+    `package.json` has no `dependencies`, so nothing is installed into
+    `dist/tb-stop-tunnel`.
 
 - **Web/tab code** (`tb-build-info/scripts/*.js`) runs in the browser inside Azure
   DevOps and is bundled by webpack (`webpack.config.js`) with AMD output and

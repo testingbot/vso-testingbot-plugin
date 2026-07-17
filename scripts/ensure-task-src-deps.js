@@ -15,8 +15,16 @@ for (const entry of fs.readdirSync(root)) {
   if (!entry.startsWith('tb-')) continue;
 
   const taskDir = path.join(root, entry);
-  if (!fs.existsSync(path.join(taskDir, 'package.json'))) continue;
+  const pkgPath = path.join(taskDir, 'package.json');
+  if (!fs.existsSync(pkgPath)) continue;
   if (fs.existsSync(path.join(taskDir, 'node_modules'))) continue;
+
+  // A dependency-free task (e.g. tb-stop-tunnel) needs no install; tsc resolves
+  // @types/node from the repo root.
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+  const hasDeps = (pkg.dependencies && Object.keys(pkg.dependencies).length) ||
+    (pkg.devDependencies && Object.keys(pkg.devDependencies).length);
+  if (!hasDeps) continue;
 
   console.log(`Installing source deps for ${entry}`);
   execFileSync(npm, ['install', '--no-audit', '--no-fund'], { cwd: taskDir, stdio: 'inherit' });

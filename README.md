@@ -9,19 +9,22 @@ results tab.
 
 Requires **Node.js >= 20**.
 
-1) Install dependencies (once):
-```
-  npm install
-```
+1. Install dependencies (once):
 
-2) Set the release version in `package.json` (single source of truth — it is
+   ```bash
+   npm install
+   ```
+
+2. Set the release version in `package.json` (single source of truth — it is
    stamped into `vss-extension.json` and both `task.json` files at package time).
 
-3) Build the `.vsix`:
-```
-  npm run package
-```
-The packaged extension is written to `Packages/`.
+3. Build the `.vsix`:
+
+   ```bash
+   npm run package
+   ```
+
+   The packaged extension is written to `Packages/`.
 
 ### What `npm run package` does
 
