@@ -62,7 +62,7 @@ async function downloadAttachmentJson(buildId: number, href: string, name: strin
   return JSON.parse(new TextDecoder('utf-8').decode(buffer));
 }
 
-async function getBuildResponse(buildInformation: BuildInformation, offset: number): Promise<BuildResponse> {
+async function getBuildResponse(buildInformation: BuildInformation, offset: number): Promise<BuildResponse | null> {
   const headers = [];
   // The TestingBot data source injects auth server-side; the Basic header is only
   // added for backwards compatibility when the (legacy) secret is present.
@@ -88,7 +88,14 @@ async function getBuildResponse(buildInformation: BuildInformation, offset: numb
     buildInformation.CONNECTED_SERVICE_NAME
   );
 
-  return JSON.parse((result.result as string[])[0]);
+  // The proxied data source returns { result: ["<json>"], statusCode, errorMessage }.
+  // When the TestingBot API has no build with this name it answers 404, leaving
+  // result empty — treat that as "no results" rather than an error.
+  const payload = (result as unknown as { result?: string[] }).result;
+  if (!payload || payload[0] === undefined) {
+    return null;
+  }
+  return JSON.parse(payload[0]);
 }
 
 async function openTestDialog(buildInformation: BuildInformation, job: TestJob): Promise<void> {
@@ -184,7 +191,9 @@ function renderPagination(
         e.preventDefault();
         try {
           const response = await getBuildResponse(buildInformation, targetOffset);
-          renderResults(buildInformation, response.data, response.meta, targetOffset, pageSize);
+          if (response) {
+            renderResults(buildInformation, response.data, response.meta, targetOffset, pageSize);
+          }
         } catch (err) {
           console.error('error loading page', err);
           renderMessage('Could not load TestingBot results for this page.');
@@ -218,6 +227,10 @@ async function renderForBuild(buildId: number | undefined): Promise<void> {
 
   const buildInformation = await downloadAttachmentJson(buildId, href, attachment.name);
   const response = await getBuildResponse(buildInformation, 0);
+  if (!response) {
+    renderMessage('No test results found');
+    return;
+  }
   const pageSize = response.meta ? response.meta.count : 0;
   renderResults(buildInformation, response.data, response.meta, 0, pageSize);
 }
@@ -225,7 +238,7 @@ async function renderForBuild(buildId: number | undefined): Promise<void> {
 function run(buildId: number | undefined): void {
   renderForBuild(buildId).catch((err) => {
     console.error('error', err);
-    renderMessage('Could not load TestingBot results: ' + (err instanceof Error ? err.message : String(err)));
+    renderMessage('Could not load TestingBot results.');
   });
 }
 
