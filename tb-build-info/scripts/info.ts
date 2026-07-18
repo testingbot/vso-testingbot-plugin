@@ -48,15 +48,18 @@ function renderMessage(message: string): void {
   el.appendChild(h2);
 }
 
-async function downloadAttachmentJson(href: string): Promise<BuildInformation> {
-  // getAttachments only returns the name + _links; download the content from the
-  // attachment's self link, authorized with the extension's access token.
-  const token = await SDK.getAccessToken();
-  const response = await fetch(href, { headers: { Authorization: `Bearer ${token}` } });
-  if (!response.ok) {
-    throw new Error(`Attachment download failed (${response.status})`);
+async function downloadAttachmentJson(buildId: number, href: string, name: string): Promise<BuildInformation> {
+  // The attachment self link is
+  //   .../build/builds/{buildId}/{timelineId}/{recordId}/attachments/{type}/{name}
+  // Download via the SDK's typed client (proxied through the host). A raw fetch to
+  // dev.azure.com from the extension iframe would be blocked by CORS.
+  const match = href.match(/\/builds\/\d+\/([0-9a-fA-F-]+)\/([0-9a-fA-F-]+)\/attachments\//);
+  if (!match) {
+    throw new Error('Unexpected attachment link format');
   }
-  return JSON.parse(await response.text());
+  const [, timelineId, recordId] = match;
+  const buffer = await buildClient.getAttachment(projectId, buildId, timelineId, recordId, ATTACHMENT_TYPE, name);
+  return JSON.parse(new TextDecoder('utf-8').decode(buffer));
 }
 
 async function getBuildResponse(buildInformation: BuildInformation, offset: number): Promise<BuildResponse> {
@@ -206,13 +209,14 @@ async function renderForBuild(buildId: number | undefined): Promise<void> {
     return;
   }
 
-  const href = attachments[0]?._links?.self?.href;
+  const attachment = attachments[0];
+  const href = attachment?._links?.self?.href;
   if (!href) {
     renderMessage('No test results found');
     return;
   }
 
-  const buildInformation = await downloadAttachmentJson(href);
+  const buildInformation = await downloadAttachmentJson(buildId, href, attachment.name);
   const response = await getBuildResponse(buildInformation, 0);
   const pageSize = response.meta ? response.meta.count : 0;
   renderResults(buildInformation, response.data, response.meta, 0, pageSize);
@@ -221,7 +225,7 @@ async function renderForBuild(buildId: number | undefined): Promise<void> {
 function run(buildId: number | undefined): void {
   renderForBuild(buildId).catch((err) => {
     console.error('error', err);
-    renderMessage('Could not load TestingBot results.');
+    renderMessage('Could not load TestingBot results: ' + (err instanceof Error ? err.message : String(err)));
   });
 }
 

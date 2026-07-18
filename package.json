@@ -1,6 +1,6 @@
 {
   "name": "vso-testingbot-plugin",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "TestingBot integration with Azure DevOps",
   "scripts": {
     "clean": "rimraf dist Packages \"tb-*/index.js\" \"tb-*/index.js.map\" \"tb-*/tests/**/*.js\" \"tb-*/tests/**/*.js.map\"",
