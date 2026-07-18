@@ -120,11 +120,6 @@
       "helpMarkDown": "Deprecated and ignored. Use the dedicated tunnel inputs instead."
     }
   ],
-  "outputVariables": [
-    { "name": "TB_TUNNEL_PID", "description": "Process id marker of the started tunnel." },
-    { "name": "TB_TUNNEL_IDENTIFIER", "description": "Identifier of the started tunnel." },
-    { "name": "TB_BUILD_NAME", "description": "Build name reported to TestingBot." }
-  ],
   "restrictions": {
     "settableVariables": {
       "allowed": [

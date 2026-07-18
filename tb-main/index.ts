@@ -188,10 +188,9 @@ async function run(): Promise<void> {
   }
 
   // A running tunnel child keeps the event loop alive, so we must force-exit in
-  // that case. But process.exit() can truncate buffered stdout and silently drop
-  // logging commands such as ##vso[task.setvariable] — which is exactly how
-  // TB_BUILD_NAME failed to reach downstream test steps. Flush stdout first, and
-  // when no tunnel is running let the task exit naturally so everything drains.
+  // that case. process.exit() can truncate buffered stdout and drop logging
+  // commands such as ##vso[task.setvariable], so flush stdout first. When no
+  // tunnel is running, let the task exit naturally so everything drains.
   if (tunnelStarted) {
     process.stdout.write('', () => process.exit(0));
   }
