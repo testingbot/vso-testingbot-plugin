@@ -1,26 +1,9 @@
 const path = require('path');
-const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
 
-// Host-provided AMD modules loaded by the VSS module loader at runtime. They
-// must stay external so webpack does not try to bundle them.
-const vssExternals = [
-  'TFS/Build/Contracts',
-  'TFS/Build/ExtensionContracts',
-  'TFS/Build/RestClient',
-  'TFS/DistributedTask/TaskAgentRestClient',
-  'TFS/DistributedTask/TaskRestClient',
-  'TFS/DistributedTask/TaskAgentHttpClient',
-  'VSS/Authentication/Services',
-  'VSS/Controls',
-  'VSS/Service',
-  'react',
-  'React'
-];
-
-// The tasks are TypeScript: tsc emits index.js in-place, which this copy step
-// picks up. The .ts sources, tests, tsconfig and dev node_modules are excluded;
-// the production node_modules are installed into dist/ afterwards.
+// The agent tasks are TypeScript compiled in-place by tsc; this copy step picks
+// up the emitted index.js. The .ts sources, tests, tsconfig and dev node_modules
+// are excluded; the production node_modules are installed into dist/ afterwards.
 const taskIgnore = [
   '**/node_modules/**',
   '**/.DS_Store',
@@ -33,36 +16,32 @@ const taskIgnore = [
 module.exports = {
   target: 'web',
   entry: {
-    info: './tb-build-info/scripts/info.js',
-    dialog: './tb-build-info/scripts/dialog.js'
+    info: './tb-build-info/scripts/info.ts',
+    dialog: './tb-build-info/scripts/dialog.ts'
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'tb-build-info/scripts/[name].js',
-    library: { type: 'amd' },
     clean: false
   },
-  externalsType: 'amd',
-  externals: vssExternals,
+  resolve: {
+    extensions: ['.ts', '.js']
+  },
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.ts$/,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
-          options: { presets: ['@babel/preset-env'] }
+          options: {
+            presets: ['@babel/preset-env', '@babel/preset-typescript']
+          }
         }
       }
     ]
   },
-  resolve: {
-    // info.js still constructs a Basic auth header with Buffer; the browser has
-    // no Buffer, so provide the polyfill until the tab is rewritten (Phase 3).
-    fallback: { buffer: require.resolve('buffer/') }
-  },
   plugins: [
-    new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'] }),
     new CopyPlugin({
       patterns: [
         { from: 'images', to: 'images' },
@@ -83,10 +62,6 @@ module.exports = {
           from: 'tb-build-info',
           to: 'tb-build-info',
           globOptions: { ignore: ['**/scripts/**', '**/.DS_Store'] }
-        },
-        {
-          from: 'node_modules/vss-web-extension-sdk/lib/VSS.SDK.js',
-          to: 'lib/VSS.SDK.js'
         }
       ]
     })

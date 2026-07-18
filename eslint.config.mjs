@@ -13,15 +13,13 @@ export default tseslint.config(
       'tb-*/index.js',
       'tb-*/index.js.map',
       'tb-*/tests/**/*.js',
-      '**/*.js.map',
-      // Third-party runtime, not ours to lint.
-      'lib/**'
+      '**/*.js.map'
     ]
   },
 
-  // TypeScript task sources + their tests.
+  // TypeScript agent tasks (run on the build agent, Node) + their tests.
   {
-    files: ['tb-*/**/*.ts'],
+    files: ['tb-main/**/*.ts', 'tb-stop-tunnel/**/*.ts'],
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     languageOptions: {
       globals: { ...globals.node, ...globals.mocha }
@@ -33,6 +31,15 @@ export default tseslint.config(
     }
   },
 
+  // TypeScript results-tab scripts (run in the browser via the extension SDK).
+  {
+    files: ['tb-build-info/**/*.ts'],
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    languageOptions: {
+      globals: globals.browser
+    }
+  },
+
   // Node build scripts.
   {
     files: ['scripts/**/*.js', 'webpack.config.js'],
@@ -40,30 +47,6 @@ export default tseslint.config(
     languageOptions: {
       globals: globals.node,
       sourceType: 'commonjs'
-    }
-  },
-
-  // Legacy browser tab scripts (slated for the SDK rewrite). Lint for real
-  // errors only; the vendored MD5 implementation trips a lot of style rules.
-  {
-    files: ['tb-build-info/scripts/**/*.js'],
-    extends: [js.configs.recommended],
-    languageOptions: {
-      sourceType: 'commonjs',
-      globals: {
-        ...globals.browser,
-        VSS: 'readonly',
-        $: 'readonly',
-        jQuery: 'readonly',
-        Buffer: 'readonly'
-      }
-    },
-    rules: {
-      'no-unused-vars': 'off',
-      'no-redeclare': 'off',
-      'no-inner-declarations': 'off',
-      'no-empty': 'off',
-      'no-func-assign': 'off'
     }
   }
 );
