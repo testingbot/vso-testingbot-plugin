@@ -38,8 +38,10 @@ version in the checked-in `vss-extension.json` / `task.json`.
 Tests: `npm test` compiles and runs the mocha suites under `tb-*/tests/` (they
 use `azure-pipelines-task-lib`'s `mock-run`/`mock-test`; `MockTestRunner`
 downloads the Node20 runtime on first run, so the first `npm test` is slow).
-There is no lint wired up yet (the old `.eslintrc` targets the removed
-babel-eslint) — planned for Phase 4 (see `MODERNIZATION.md`).
+Lint: `npm run lint` runs ESLint (flat config in `eslint.config.mjs`,
+typescript-eslint for the `.ts` tasks; the legacy tab scripts are linted
+leniently). CI (`.github/workflows/build.yml`) runs lint + tests + a full
+package build on every PR targeting `master`.
 
 ## Architecture
 

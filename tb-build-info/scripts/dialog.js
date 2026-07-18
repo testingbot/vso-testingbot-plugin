@@ -1,4 +1,3 @@
-/* eslint-env browser, es6 */
 /* global VSS */
 const getParams = query => {
   if (!query) {

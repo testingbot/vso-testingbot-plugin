@@ -1,0 +1,44 @@
+# Publishes the extension to the Visual Studio Marketplace when a v* tag is
+# pushed. Requires a one-time setup by a maintainer:
+#   1. Bump "version" in package.json (the Marketplace rejects a version that
+#      already exists), commit, then tag: git tag v0.3.0 && git push --tags
+#   2. Add a repository secret AZURE_DEVOPS_MARKETPLACE_PAT — a Marketplace
+#      "Manage" Personal Access Token for the `testingbot` publisher.
+#
+# NOTE: all-organization PATs are being retired on 2026-12-01. The longer-term
+# path is federated Entra/OIDC auth (e.g. the jessehouwing/azdo-marketplace
+# action); switch to that before then.
+name: Publish
+
+on:
+  push:
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: marketplace
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Package
+        run: npm run package
+
+      - name: Publish to the Marketplace
+        run: npx tfx extension publish --vsix Packages/*.vsix --token "$AZURE_DEVOPS_MARKETPLACE_PAT"
+        env:
+          AZURE_DEVOPS_MARKETPLACE_PAT: ${{ secrets.AZURE_DEVOPS_MARKETPLACE_PAT }}
