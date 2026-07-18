@@ -41,7 +41,7 @@ downloads the Node20 runtime on first run, so the first `npm test` is slow).
 Lint: `npm run lint` runs ESLint (flat config in `eslint.config.mjs`,
 typescript-eslint for the `.ts` tasks; the legacy tab scripts are linted
 leniently). CI (`.github/workflows/build.yml`) runs lint + tests + a full
-package build on every PR.
+package build on every PR targeting `master`.
 
 ## Architecture
 

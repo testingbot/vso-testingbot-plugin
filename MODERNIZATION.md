@@ -45,7 +45,7 @@ This extension is a 2016-era fork of Sauce Labs' now-unpublished `vso-sauce-onde
 2. **Migrate both tasks to the `Node20_1` handler + `azure-pipelines-task-lib` 5.x** — the bare `"Node"` (Node 6) handler is removed from new agents in November 2026; the extension breaks on schedule without this. _(DONE — Phase 1/2.)_
 3. **Replace the broken gulp 3 / webpack 1 / babel 6 toolchain** with TypeScript + webpack 5 + npm scripts (per `microsoft/azure-devops-extension-sample`) so a `.vsix` can be built at all. _(DONE — Phase 1 build, Phase 2 TypeScript.)_
 4. **Stop bundling the 2019 tunnel jar** (`tb-main/tunnel/2.30.jar`, internally v2.9, vulnerable Jetty 9.4.12) — use `testingbot-tunnel-launcher` (npm, v1.1.18) to download/cache the current tunnel (v4.8) at runtime. _(DONE — Phase 2.)_
-5. **Add real CI/CD** — GitHub Actions building the `.vsix` on every PR and publishing to the Marketplace on tag (tfx-cli 0.23.x, Entra/OIDC auth), replacing dead Travis/Jenkins/CodeQL v1 configs. _(PENDING — Phase 4.)_
+5. **Add real CI/CD** — GitHub Actions building the `.vsix` on every PR and publishing to the Marketplace on tag (tfx-cli 0.23.x, Entra/OIDC auth), replacing dead Travis/Jenkins/CodeQL v1 configs. _(DONE — Phase 4; the build/CodeQL/lint workflows run, the tag publish workflow just needs the maintainer's Marketplace secret.)_
 
 ## 2. Critical bugs & security issues (verified findings)
 
@@ -124,7 +124,7 @@ Goal: a results tab with no secrets in the browser, no CDN scripts, and a suppor
 | 4.2 GitHub Actions build workflow | **S** | On PR/push: Node 20, `npm ci`, lint, tests, build, `tfx extension create`, upload `.vsix` artifact. This single workflow would have caught the Dependabot gulp4/webpack5 breakage that shipped unnoticed. |
 | 4.3 Marketplace publishing on tag | **M** | `jessehouwing/azdo-marketplace@v6` (successor of Azure DevOps Extension Tasks; runs on GitHub Actions): `query-version` (version-source: marketplace, action: Patch) → `publish` with `extension-version` override — no version-commit-back needed. Prefer `auth-type: oidc` (federated Entra) over PATs: all-org PATs are retired **Dec 1, 2026**. Publish a private `-dev` manifest variant to a TestingBot test org before public release (pattern from both the Sauce fork's beta channel and the Microsoft sample). |
 | 4.4 Fix CodeQL workflow | **S** | `github/codeql-action/*@v3`, `actions/checkout@v4` (v1 disabled Jan 2023; the repo's only automated check produces no signal today). |
-| 4.5 ESLint / formatting refresh | **S** | Replace `babel-eslint` config with `@typescript-eslint` once Phase 2 lands. |
+| 4.5 ESLint / formatting refresh | **S** | _(DONE — Phase 4.)_ Replaced the `babel-eslint` `.eslintrc` with an ESLint 9 flat config (`eslint.config.mjs`) using `typescript-eslint`; wired `npm run lint`. |
 | 4.6 Docs | **S** | Rewrite README (current build instructions are all broken); add a YAML quick-start (secret variables + script steps) mirroring what Sauce/BrowserStack docs do, for users who cannot install marketplace extensions. |
 
 **Sequencing note:** Phase 1 + steps 2.3/2.4/3.1 are the minimum credible release (fixes the credential leak and the November 2026 handler deadline). Phase 3.2 (SDK port) is the largest single item and can ship in a later minor version.

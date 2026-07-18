@@ -20,8 +20,10 @@ steps:
 
   # ... run your Selenium/Appium tests here; they read the exported variables ...
 
-  # Only needed when tbTunnel was true.
+  # Only needed when tbTunnel was true. condition: always() ensures the tunnel is
+  # torn down even if a test step above failed.
   - task: TBStopTunnel@0
+    condition: always()
 ```
 
 Test results appear on the **TestingBot** tab of the build summary.
@@ -64,7 +66,7 @@ npm run lint    # eslint (flat config, typescript-eslint)
 npm test        # tsc + mocha task tests
 ```
 
-CI runs lint, tests and a full package build on every PR
+CI runs lint, tests and a full package build on every PR targeting `master`
 (`.github/workflows/build.yml`). Tagging a commit `v*` publishes to the
 Marketplace (`.github/workflows/publish.yml`) — see that file for the required
 `AZURE_DEVOPS_MARKETPLACE_PAT` secret and version-bump steps.
