@@ -194,21 +194,19 @@ function renderPagination(
   return list;
 }
 
-async function load(): Promise<void> {
-  const buildPageService = await SDK.getService<IBuildPageDataService>(BuildServiceIds.BuildPageDataService);
-  const build = buildPageService.getBuildPageData()?.build;
-  if (!build) {
+async function renderForBuild(buildId: number | undefined): Promise<void> {
+  if (!buildId) {
     renderMessage('No test results found');
     return;
   }
 
-  const attachments = await buildClient.getAttachments(projectId, build.id, ATTACHMENT_TYPE);
+  const attachments = await buildClient.getAttachments(projectId, buildId, ATTACHMENT_TYPE);
   if (!attachments.length) {
     renderMessage('No test results found');
     return;
   }
 
-  const href = attachments[0]._links?.self?.href;
+  const href = attachments[0]?._links?.self?.href;
   if (!href) {
     renderMessage('No test results found');
     return;
@@ -220,6 +218,13 @@ async function load(): Promise<void> {
   renderResults(buildInformation, response.data, response.meta, 0, pageSize);
 }
 
+function run(buildId: number | undefined): void {
+  renderForBuild(buildId).catch((err) => {
+    console.error('error', err);
+    renderMessage('Could not load TestingBot results.');
+  });
+}
+
 async function main(): Promise<void> {
   await SDK.init({ loaded: false });
   await SDK.ready();
@@ -228,14 +233,24 @@ async function main(): Promise<void> {
   endpointClient = getClient(ServiceEndpointRestClient);
   projectId = SDK.getWebContext().project.id;
 
-  try {
-    await load();
-  } catch (err) {
-    console.error('error', err);
-    renderMessage('Could not load TestingBot results.');
-  } finally {
-    SDK.notifyLoadSucceeded();
+  // A build-results tab receives an onBuildChanged callback in its configuration
+  // (the reliable way to get the selected build here — getBuildPageData() does
+  // not return the build in this iframe context). Fall back to it only if the
+  // callback is missing.
+  const config = SDK.getConfiguration();
+  if (config && typeof config.onBuildChanged === 'function') {
+    config.onBuildChanged((build: { id?: number }) => run(build?.id));
+  } else {
+    try {
+      const buildPageService = await SDK.getService<IBuildPageDataService>(BuildServiceIds.BuildPageDataService);
+      run(buildPageService.getBuildPageData()?.build?.id);
+    } catch (err) {
+      console.error('error', err);
+      renderMessage('Could not load TestingBot results.');
+    }
   }
+
+  SDK.notifyLoadSucceeded();
 }
 
 main();
