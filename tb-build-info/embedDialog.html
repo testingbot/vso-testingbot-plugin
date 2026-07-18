@@ -1,13 +1,9 @@
 <!DOCTYPE html>
+<html>
 <head>
   <title>TestingBot Info</title>
-  <script src="../lib/VSS.SDK.js"></script>
-  <script type="text/javascript">
-    VSS.init({ usePlatformScripts: true, moduleLoaderConfig: { paths: { "scripts": "tb-build-info/scripts" } } });
-    VSS.ready(function() {
-        require(["scripts/dialog"], function () { });
-    });
-  </script>
 </head>
-<body></body>
+<body>
+  <script src="scripts/dialog.js"></script>
+</body>
 </html>

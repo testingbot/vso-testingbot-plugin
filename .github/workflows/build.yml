@@ -28,6 +28,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Type-check tab
+        run: npm run typecheck
+
       - name: Test
         run: npm test
 
