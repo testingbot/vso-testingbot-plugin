@@ -1,0 +1,41 @@
+# Builds the .vsix and attaches it to a GitHub Release. This does NOT publish to
+# the Visual Studio Marketplace — that is a separate, deliberate step
+# (.github/workflows/publish.yml, run manually).
+#
+# Trigger by pushing a tag, e.g. `git tag v0.3.0 && git push origin v0.3.0`,
+# or run manually from the Actions tab (workflow_dispatch).
+name: Release
+
+on:
+  push:
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Package
+        run: npm run package
+
+      - name: Create GitHub Release with the VSIX
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Packages/*.vsix
+          draft: true
+          generate_release_notes: true

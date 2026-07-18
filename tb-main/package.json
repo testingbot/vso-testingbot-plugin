@@ -1,6 +1,6 @@
 {
   "name": "tb-main",
-  "version": "0.2.7",
+  "version": "0.3.0",
   "description": "TestingBot Configuration task",
   "private": true,
   "main": "index.js",
