@@ -17,9 +17,10 @@ _Date: 2026-07-17. Applies to repo `vso-testingbot-plugin` (marketplace: `testin
 >   secret leaves the browser (finding #1) — **blocked**: the TestingBot public
 >   API exposes no endpoint that returns the `md5(key:secret:session_id)` share
 >   hash, so keeping the embedded `/mini` viewer requires the secret in the
->   browser until TestingBot adds such an endpoint; (b) the `vss-web-extension-sdk`
->   → `azure-devops-extension-sdk` / React port (large, and the old SDK keeps
->   working, so deferred to its own PR).
+>   browser until TestingBot adds such an endpoint. (b) The SDK port is now
+>   **DONE (PR #21):** the tab is TypeScript on `azure-devops-extension-sdk` v4 +
+>   `azure-devops-extension-api` v5 (plain DOM, no jQuery/Buffer), bundled
+>   self-contained; `VSS.SDK.js` is gone. (React/`azure-devops-ui` was not needed.)
 > - **Phase 4 — MOSTLY DONE (PR #20):** GitHub Actions build workflow (lint +
 >   tests + package on every PR), ESLint flat config wired up (`npm run lint`),
 >   CodeQL workflow fixed (v3 actions), dead Jenkinsfile removed, README usage
@@ -110,7 +111,7 @@ Goal: a results tab with no secrets in the browser, no CDN scripts, and a suppor
 | Step | Effort | Detail / rationale |
 |------|--------|--------------------|
 | 3.1 Delete the unpkg script tag | **S** | `infoTab.html:5` — remove entirely; `window.TextDecoder` is native (its sole use is `info.js:303`). Do this immediately; it does not depend on the SDK migration. |
-| 3.2 Port from `vss-web-extension-sdk` 1.106 to `azure-devops-extension-sdk` | **L** | Use sdk **v4.x** for now (api 5.275.0's peerDependency is `^2 \|\| ^3 \|\| ^4`, not yet v5) + `azure-devops-extension-api` 5.275.0 with subpath imports (`azure-devops-extension-api/Build`), optionally `azure-devops-ui` 2.276.0 (hard peer dep: React 16.8.x, not 18). Get build context via `SDK.getService(BuildServiceIds.BuildPageDataService).getBuildPageData()` — `SDK.getConfiguration()` is unreliable for `ms.vss-build-web.build-results-tab`. The old VSS.SDK keeps working meanwhile ("will continue to work indefinitely" per Microsoft), so this can trail Phases 1-2 without a flag day. |
+| 3.2 Port from `vss-web-extension-sdk` 1.106 to `azure-devops-extension-sdk` | **L** | _(DONE — PR #21: sdk v4.2.0 + api 5.275.0, TypeScript, plain DOM, self-contained bundle; `BuildRestClient.getAttachments`, `BuildPageDataService`, `IHostPageLayoutService.openCustomDialog`. No React.)_ Use sdk **v4.x** for now (api 5.275.0's peerDependency is `^2 \|\| ^3 \|\| ^4`, not yet v5) + `azure-devops-extension-api` 5.275.0 with subpath imports (`azure-devops-extension-api/Build`), optionally `azure-devops-ui` 2.276.0 (hard peer dep: React 16.8.x, not 18). Get build context via `SDK.getService(BuildServiceIds.BuildPageDataService).getBuildPageData()` — `SDK.getConfiguration()` is unreliable for `ms.vss-build-web.build-results-tab`. The old VSS.SDK keeps working meanwhile ("will continue to work indefinitely" per Microsoft), so this can trail Phases 1-2 without a flag day. |
 | 3.3 Remove all credential use from the browser | **M** | Drop the client-built Basic header (`info.js:200-203`) — `executeServiceEndpointRequest` proxies auth server-side via the endpoint's stored credential. Read only non-secret metadata from the (fixed) attachment. For per-test share links (`info.js:246`, md5(key:secret:session_id) — TestingBot's own scheme), add a service-endpoint data source or a TestingBot API endpoint that returns share URLs/hashes server-side; until then, degrade to linking testingbot.com directly rather than shipping the secret. Delete the 180-line inline MD5 implementation. |
 | 3.4 Fix pagination + error UX | **S** | Fixed page size from the offset-0 response (`meta` envelope: `{data, meta:{offset,count,total}}`, count max 500); guard zero counts; render error states instead of eternal "LOADING"; try/catch the pagination click handler. |
 | 3.5 Validate `embedDialog` URL | **S** | `new URL(params.url)` must be `https:` + host `testingbot.com`, else render nothing (`dialog.js:16-20`). |

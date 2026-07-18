@@ -99,23 +99,25 @@ service endpoint. The tab never sees raw credentials outside that attachment.
     `package.json` has no `dependencies`, so nothing is installed into
     `dist/tb-stop-tunnel`.
 
-- **Web/tab code** (`tb-build-info/scripts/*.js`) runs in the browser inside Azure
-  DevOps and is bundled by webpack (`webpack.config.js`) with AMD output and
-  `@babel/preset-env`. The two entry points (`info`, `dialog`) emit to
-  `dist/tb-build-info/scripts/`. The host-provided SDK modules (`TFS/*`, `VSS/*`,
-  `react`) are declared as webpack **externals** (`externalsType: 'amd'`) — they
-  are resolved by the VSS module loader at runtime, not bundled. Add any new
-  host-provided module to the `externals` list in `webpack.config.js`, or the
-  bundle will try to inline it. `info.js` still uses `Buffer`, so the config
-  provides a `buffer` polyfill (removed when the tab is rewritten — see
-  `MODERNIZATION.md` Phase 3).
+- **Web/tab code** (`tb-build-info/scripts/*.ts`) runs in the browser inside Azure
+  DevOps. It is TypeScript using `azure-devops-extension-sdk` (v4) +
+  `azure-devops-extension-api` (v5) — `SDK.init`/`SDK.ready`/`SDK.getService`,
+  `BuildRestClient` for attachments, `ServiceEndpointRestClient` for the data
+  source, `IHostPageLayoutService.openCustomDialog` for the embed dialog. webpack
+  (`webpack.config.js`) bundles it **self-contained** (the SDK/API and `md5` are
+  bundled in, not external) via `@babel/preset-env` + `@babel/preset-typescript`;
+  the two entry points (`info`, `dialog`) emit to `dist/tb-build-info/scripts/`.
+  `infoTab.html` / `embedDialog.html` load those bundles directly with a plain
+  `<script>` — there is no `VSS.SDK.js` and no AMD loader anymore. babel only
+  strips types, so `npm run typecheck` (`tb-build-info/tsconfig.json`) type-checks
+  the tab separately.
 
 ## webpack pipeline specifics
 
 `webpack.config.js` does the bundle plus a `copy-webpack-plugin` pass that copies
 the static files into `dist/`: `images`, `overview.md`, `vss-extension.json`, the
-`tb-main` / `tb-stop-tunnel` folders, everything in `tb-build-info` **except**
-`scripts/**` (those are bundled, not copied), and `VSS.SDK.js` into `dist/lib/`.
+`tb-main` / `tb-stop-tunnel` folders, and everything in `tb-build-info` **except**
+`scripts/**` (those are bundled, not copied).
 
 `bin/upload_all.js` is a helper that uploads the `tb-*` build task definitions
 directly to a collection via tfx-cli (separate from packaging the extension).

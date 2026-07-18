@@ -28,8 +28,7 @@
     { "path": "images", "addressable": true },
     { "path": "tb-main" },
     { "path": "tb-stop-tunnel" },
-    { "path": "tb-build-info", "addressable": true },
-    { "path": "lib", "addressable": true }
+    { "path": "tb-build-info", "addressable": true }
 
   ],
   "scopes": [ "vso.build", "vso.serviceendpoint_query" ],
@@ -92,7 +91,7 @@
       "description": "Embed Dialog",
       "targets": [],
       "properties": {
-          "uri": "tb-build-info/embedDialog.html?url={{url}}"
+          "uri": "tb-build-info/embedDialog.html"
       }
     }
   ]

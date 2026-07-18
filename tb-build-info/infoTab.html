@@ -1,23 +1,17 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
+<html>
 <head>
   <title>TestingBot Info</title>
-  <script src="../lib/VSS.SDK.js"></script>
-  <script type="text/javascript">
-    VSS.init({ usePlatformScripts: true, moduleLoaderConfig: { paths: { "scripts": "tb-build-info/scripts" } } });
-    VSS.ready(function() {
-        require(["scripts/info"], function () { });
-    });
-  </script>
   <style type="text/css">
     .build-info {
       padding: 10px;
     }
   </style>
 </head>
-
 <body>
   <div class="build-info">
-      <H1>LOADING</h1>
+    <h2>Loading…</h2>
   </div>
+  <script src="scripts/info.js"></script>
 </body>
 </html>
