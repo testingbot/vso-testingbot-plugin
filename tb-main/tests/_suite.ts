@@ -15,16 +15,14 @@ describe('TBMain (TestingBot Configuration)', function () {
       // Build name falls back / joins correctly.
       assert.ok(tr.stdout.indexOf('My_Build_42') >= 0, 'TB_BUILD_NAME should be My_Build_42');
 
-      // Secret is registered (masked in logs) and set as a secret variable.
+      // Secret value is registered with setSecret so it is masked in logs.
       assert.ok(tr.stdout.indexOf('task.setsecret') >= 0, 'secret should be registered with setSecret');
+      // It is exported as a NORMAL variable (not issecret=true) so downstream test
+      // steps can read it from the environment — Azure DevOps does not inject
+      // secret variables into the environment.
       assert.ok(
-        tr.stdout.indexOf('TB_SECRET;isOutput=false;issecret=true;') >= 0,
-        'TB_SECRET should be a secret variable'
-      );
-      // ...and never exported as a non-secret variable.
-      assert.ok(
-        tr.stdout.indexOf('issecret=false;]my-secret') < 0,
-        'the secret must not be exported as a non-secret variable'
+        tr.stdout.indexOf('TB_SECRET;isOutput=false;issecret=false;') >= 0,
+        'TB_SECRET should be a normal (env-available) variable'
       );
 
       // Attachment is written and still carries the credentials the results tab

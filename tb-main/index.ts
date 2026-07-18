@@ -50,14 +50,17 @@ function getEndpointDetails(fieldName: string): Credentials {
 }
 
 function exportVariables(credentials: Credentials): void {
-  // Register the secret so it is masked in logs, then export it as a secret
-  // pipeline variable. The key is not sensitive and stays a normal variable.
+  // Register the secret so its value is masked in logs. It is then exported as a
+  // NORMAL (non-secret) variable on purpose: Azure DevOps does not inject secret
+  // variables into the environment, and downstream test steps (Selenium/Appium)
+  // need to read TB_SECRET / TESTINGBOT_SECRET from the environment to reach the
+  // grid. setSecret still masks the value wherever it appears in the logs.
   tl.setSecret(credentials.secret);
 
   tl.setVariable('TB_KEY', credentials.key);
   tl.setVariable('TESTINGBOT_KEY', credentials.key);
-  tl.setVariable('TB_SECRET', credentials.secret, true);
-  tl.setVariable('TESTINGBOT_SECRET', credentials.secret, true);
+  tl.setVariable('TB_SECRET', credentials.secret);
+  tl.setVariable('TESTINGBOT_SECRET', credentials.secret);
   tl.setVariable('TB_API_ENDPOINT', 'api.testingbot.com');
   tl.setVariable('SELENIUM_HOST', 'hub.testingbot.com');
   tl.setVariable('SELENIUM_PORT', '80');
