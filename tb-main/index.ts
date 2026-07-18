@@ -171,21 +171,29 @@ function writeAttachment(credentials: Credentials): void {
 }
 
 async function run(): Promise<void> {
+  let tunnelStarted = false;
   try {
     const credentials = getEndpointDetails('connectedServiceName');
     exportVariables(credentials);
 
     if (tl.getBoolInput('tbTunnel', false)) {
       await startTunnel(credentials);
+      tunnelStarted = true;
     }
 
     writeAttachment(credentials);
     tl.setResult(tl.TaskResult.Succeeded, 'TestingBot configured.');
-    // Exit explicitly: a running tunnel child keeps the event loop alive.
-    process.exit(0);
   } catch (err) {
     tl.setResult(tl.TaskResult.Failed, err instanceof Error ? err.message : String(err));
-    process.exit(1);
+  }
+
+  // A running tunnel child keeps the event loop alive, so we must force-exit in
+  // that case. But process.exit() can truncate buffered stdout and silently drop
+  // logging commands such as ##vso[task.setvariable] — which is exactly how
+  // TB_BUILD_NAME failed to reach downstream test steps. Flush stdout first, and
+  // when no tunnel is running let the task exit naturally so everything drains.
+  if (tunnelStarted) {
+    process.stdout.write('', () => process.exit(0));
   }
 }
 
