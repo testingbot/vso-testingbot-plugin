@@ -126,9 +126,6 @@
     { "name": "TB_BUILD_NAME", "description": "Build name reported to TestingBot." }
   ],
   "restrictions": {
-    "commands": {
-      "mode": "restricted"
-    },
     "settableVariables": {
       "allowed": [
         "TB_KEY",

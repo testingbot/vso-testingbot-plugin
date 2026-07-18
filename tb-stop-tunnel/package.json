@@ -1,6 +1,6 @@
 {
   "name": "tb-stop-tunnel",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Stop TestingBot Tunnel task",
   "private": true,
   "main": "index.js",
