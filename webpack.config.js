@@ -16,8 +16,7 @@ const taskIgnore = [
 module.exports = {
   target: 'web',
   entry: {
-    info: './tb-build-info/scripts/info.ts',
-    dialog: './tb-build-info/scripts/dialog.ts'
+    info: './tb-build-info/scripts/info.ts'
   },
   output: {
     path: path.resolve(__dirname, 'dist'),

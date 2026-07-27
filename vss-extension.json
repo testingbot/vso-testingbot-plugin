@@ -84,15 +84,6 @@
           "name": "TestingBot",
           "uri": "tb-build-info/infoTab.html"
       }
-    },
-    {
-      "id": "embed-dialog",
-      "type": "ms.vss-web.control",
-      "description": "Embed Dialog",
-      "targets": [],
-      "properties": {
-          "uri": "tb-build-info/embedDialog.html"
-      }
     }
   ]
 }

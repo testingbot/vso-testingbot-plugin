@@ -50,14 +50,17 @@ function getEndpointDetails(fieldName: string): Credentials {
 }
 
 function exportVariables(credentials: Credentials): void {
-  // Register the secret so it is masked in logs, then export it as a secret
-  // pipeline variable. The key is not sensitive and stays a normal variable.
+  // Register the secret so its value is masked in logs. It is then exported as a
+  // NORMAL (non-secret) variable on purpose: Azure DevOps does not inject secret
+  // variables into the environment, and downstream test steps (Selenium/Appium)
+  // need to read TB_SECRET / TESTINGBOT_SECRET from the environment to reach the
+  // grid. setSecret still masks the value wherever it appears in the logs.
   tl.setSecret(credentials.secret);
 
   tl.setVariable('TB_KEY', credentials.key);
   tl.setVariable('TESTINGBOT_KEY', credentials.key);
-  tl.setVariable('TB_SECRET', credentials.secret, true);
-  tl.setVariable('TESTINGBOT_SECRET', credentials.secret, true);
+  tl.setVariable('TB_SECRET', credentials.secret);
+  tl.setVariable('TESTINGBOT_SECRET', credentials.secret);
   tl.setVariable('TB_API_ENDPOINT', 'api.testingbot.com');
   tl.setVariable('SELENIUM_HOST', 'hub.testingbot.com');
   tl.setVariable('SELENIUM_PORT', '80');
@@ -168,21 +171,28 @@ function writeAttachment(credentials: Credentials): void {
 }
 
 async function run(): Promise<void> {
+  let tunnelStarted = false;
   try {
     const credentials = getEndpointDetails('connectedServiceName');
     exportVariables(credentials);
 
     if (tl.getBoolInput('tbTunnel', false)) {
       await startTunnel(credentials);
+      tunnelStarted = true;
     }
 
     writeAttachment(credentials);
     tl.setResult(tl.TaskResult.Succeeded, 'TestingBot configured.');
-    // Exit explicitly: a running tunnel child keeps the event loop alive.
-    process.exit(0);
   } catch (err) {
     tl.setResult(tl.TaskResult.Failed, err instanceof Error ? err.message : String(err));
-    process.exit(1);
+  }
+
+  // A running tunnel child keeps the event loop alive, so we must force-exit in
+  // that case. process.exit() can truncate buffered stdout and drop logging
+  // commands such as ##vso[task.setvariable], so flush stdout first. When no
+  // tunnel is running, let the task exit naturally so everything drains.
+  if (tunnelStarted) {
+    process.stdout.write('', () => process.exit(0));
   }
 }
 
