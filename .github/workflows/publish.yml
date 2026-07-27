@@ -2,22 +2,31 @@
 # manual action (workflow_dispatch) — pushing a tag builds a GitHub Release with
 # the .vsix (see release.yml) but does NOT publish to the Marketplace.
 #
+# Authentication is OIDC / workload identity federation — no long-lived PAT is
+# stored. GitHub mints a short-lived OIDC token, azure/login federates it to an
+# Entra identity, and we exchange that for an Entra access token for Azure
+# DevOps, which tfx accepts in place of a Marketplace PAT.
+#
 # Requires a one-time setup by a maintainer:
 #   1. Bump "version" in package.json (the Marketplace rejects a version that
 #      already exists) and commit it before running this.
-#   2. Add a repository secret AZURE_DEVOPS_MARKETPLACE_PAT — a Marketplace
-#      "Manage" Personal Access Token for the `testingbot` publisher.
-#
-# NOTE: all-organization PATs are being retired on 2026-12-01. The longer-term
-# path is federated Entra/OIDC auth (e.g. the jessehouwing/azdo-marketplace
-# action); switch to that before then.
+#   2. Create an Entra app registration (or user-assigned managed identity) and
+#      add a federated credential trusting this repo's `marketplace` environment
+#      (subject: repo:testingbot/vso-testingbot-plugin:environment:marketplace).
+#   3. Register that identity as a member of the `testingbot` Marketplace
+#      publisher: call the Azure DevOps profiles/me endpoint once to surface its
+#      ID, then add it under Marketplace > Manage Publishers.
+#   4. On the repo's `marketplace` environment, add secrets AZURE_CLIENT_ID and
+#      AZURE_TENANT_ID, and protect it with required reviewers so publishing
+#      needs an approval.
 name: Publish
 
 on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: read      # checkout
+  id-token: write     # mint the GitHub OIDC token for azure/login
 
 jobs:
   publish:
@@ -39,7 +48,20 @@ jobs:
       - name: Package
         run: npm run package
 
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
       - name: Publish to the Marketplace
-        run: npx tfx extension publish --vsix Packages/*.vsix --token "$AZURE_DEVOPS_MARKETPLACE_PAT"
-        env:
-          AZURE_DEVOPS_MARKETPLACE_PAT: ${{ secrets.AZURE_DEVOPS_MARKETPLACE_PAT }}
+        run: |
+          set -euo pipefail
+          # Entra access token for the Azure DevOps resource (well-known app id,
+          # identical for every org). tfx takes it via --token, --auth-type pat.
+          token=$(az account get-access-token \
+            --resource 499b84ac-1321-427f-aa17-267ca6975798 \
+            --query accessToken -o tsv)
+          echo "::add-mask::$token"
+          npx tfx extension publish --vsix Packages/*.vsix --auth-type pat --token "$token"
