@@ -32,7 +32,7 @@ writeJson(manifestPath, manifest);
 
 // Each task: { Major, Minor, Patch } object. A missing manifest means the build
 // copy step did not run correctly, so fail instead of shipping an unstamped task.
-for (const task of ['tb-main', 'tb-stop-tunnel']) {
+for (const task of ['tb-main', 'tb-stop-tunnel', 'tb-upload-app']) {
   const taskPath = path.join(distDir, task, 'task.json');
   if (!fs.existsSync(taskPath)) {
     throw new Error(`Expected task manifest is missing: ${taskPath}. Did the build copy step run?`);

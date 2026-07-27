@@ -20,6 +20,9 @@ Compatible with tests written in any language and framework. Use any test runner
 #### Pinpoint issues easily
 Easily locate errors, crashes and problems by watching the video recording, or inspecting the logs and screenshots.
 
+#### Easy mobile app uploads
+Upload your mobile app (`.apk`, `.aab`, `.ipa` or `.zip`) straight from your pipeline to TestingBot Storage with the "Upload App to TestingBot Storage" task. It exports the returned `tb://` URL as a pipeline variable so your Appium tests can reference the freshly built app as their `app` capability.
+
 #### Security in the cloud
 Each test runs on a pristine, brand new Virtual Machine, which is destroyed after the run, assuring no customer data is exposed to future sessions.
 With TestingBot Tunnel, you can securily test your app and website behind your firewall.

@@ -5,7 +5,7 @@
   "scripts": {
     "clean": "rimraf dist Packages \"tb-*/index.js\" \"tb-*/index.js.map\" \"tb-*/tests/**/*.js\" \"tb-*/tests/**/*.js.map\"",
     "precompile": "node scripts/ensure-task-src-deps.js",
-    "compile": "tsc -p tb-main/tsconfig.json && tsc -p tb-stop-tunnel/tsconfig.json",
+    "compile": "tsc -p tb-main/tsconfig.json && tsc -p tb-stop-tunnel/tsconfig.json && tsc -p tb-upload-app/tsconfig.json",
     "typecheck": "tsc -p tb-build-info/tsconfig.json",
     "lint": "eslint .",
     "build": "webpack --mode production",

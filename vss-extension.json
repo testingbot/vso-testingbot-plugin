@@ -28,6 +28,7 @@
     { "path": "images", "addressable": true },
     { "path": "tb-main" },
     { "path": "tb-stop-tunnel" },
+    { "path": "tb-upload-app" },
     { "path": "tb-build-info", "addressable": true }
 
   ],
@@ -49,6 +50,12 @@
       "type": "ms.vss-distributed-task.task",
       "targets": [ "ms.vss-distributed-task.tasks" ],
       "properties": { "name": "tb-stop-tunnel" }
+    },
+    {
+      "id": "tb-upload-app",
+      "type": "ms.vss-distributed-task.task",
+      "targets": [ "ms.vss-distributed-task.tasks" ],
+      "properties": { "name": "tb-upload-app" }
     },
     {
       "id": "tb-endpoint-type",

@@ -45,7 +45,7 @@ package build on every PR targeting `master`.
 
 ## Architecture
 
-The extension contributes three server-side pieces plus one endpoint type,
+The extension contributes four server-side pieces plus one endpoint type,
 declared in `vss-extension.json` under `contributions`:
 
 - **`tb-main/`** — Pipeline task "TestingBot Configuration" (`TBMain`). TypeScript
@@ -67,6 +67,18 @@ declared in `vss-extension.json` under `contributions`:
   `killAsync` can't reach a tunnel started by a different task). Add this task
   after your test steps to tear the tunnel down.
 
+- **`tb-upload-app/`** — Pipeline task "Upload App to TestingBot Storage"
+  (`TBUploadApp`). TypeScript task (`index.ts`) that reads the TestingBot
+  service-endpoint credential and uploads a native app build (`.apk`/`.aab`/`.ipa`/
+  `.zip`) to TestingBot Storage via `POST https://api.testingbot.com/v1/storage`,
+  then exports the returned `tb://<appkey>` as a pipeline variable (default
+  `TB_APP_URL`) for a downstream Appium step's `app` capability. With the
+  `overwrite` toggle it POSTs to `/v1/storage/<appkey>` instead, keeping the same
+  `tb://` URL across builds (the "always upload the latest build" CI pattern). The
+  multipart upload uses Node 20's global `fetch`/`FormData`/`Blob`, so its only
+  runtime dependency is `azure-pipelines-task-lib` (installed into
+  `dist/tb-upload-app/node_modules` by the `deps` step, like `tb-main`).
+
 - **`tb-build-info/`** — A build-results web tab (`infoTab.html` +
   `scripts/info.js`) shown inside the Azure DevOps build view. It reads the
   `TestingBotBuildResult` attachment left by `tb-main`, calls the TestingBot API
@@ -84,8 +96,8 @@ service endpoint. The tab never sees raw credentials outside that attachment.
 
 ## Task vs. web code — two different runtimes
 
-- **Task code** runs on the build agent under the `Node20_1` handler. Both tasks
-  are TypeScript (`index.ts` compiled to `index.js` in place).
+- **Task code** runs on the build agent under the `Node20_1` handler. All three
+  tasks are TypeScript (`index.ts` compiled to `index.js` in place).
   - `tb-main/index.ts` uses `azure-pipelines-task-lib/task` (`tl.getInput`,
     `tl.getBoolInput`, `tl.setVariable`, `tl.setSecret`, `tl.command`,
     `tl.setResult`) and `testingbot-tunnel-launcher`. It declares those runtime
@@ -98,6 +110,10 @@ service endpoint. The tab never sees raw credentials outside that attachment.
     `azure-pipelines-task-lib` (or any runtime dependency) to the stop task; its
     `package.json` has no `dependencies`, so nothing is installed into
     `dist/tb-stop-tunnel`.
+  - `tb-upload-app/index.ts` uses `azure-pipelines-task-lib/task` (declared in
+    `tb-upload-app/package.json`, installed into `dist/tb-upload-app/node_modules`
+    by the `deps` step) and Node 20's global `fetch`/`FormData`/`Blob` for the
+    multipart upload — no HTTP/multipart library is bundled.
 
 - **Web/tab code** (`tb-build-info/scripts/*.ts`) runs in the browser inside Azure
   DevOps. It is TypeScript using `azure-devops-extension-sdk` (v4) +

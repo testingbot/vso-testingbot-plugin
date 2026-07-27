@@ -57,6 +57,11 @@ module.exports = {
           globOptions: { ignore: taskIgnore }
         },
         {
+          from: 'tb-upload-app',
+          to: 'tb-upload-app',
+          globOptions: { ignore: taskIgnore }
+        },
+        {
           // Everything in tb-build-info except the scripts webpack bundles above.
           from: 'tb-build-info',
           to: 'tb-build-info',
