@@ -1,10 +1,128 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8">
   <title>TestingBot Info</title>
   <style type="text/css">
     .build-info {
-      padding: 10px;
+      padding: 16px 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #1f2328;
+    }
+    .build-info h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0 0 4px;
+      word-break: break-all;
+    }
+    .tb-subtitle {
+      font-size: 13px;
+      color: #57606a;
+      margin: 0 0 16px;
+    }
+    .tb-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .tb-table thead th {
+      text-align: left;
+      font-weight: 600;
+      color: #57606a;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: .04em;
+      padding: 0 12px 8px;
+      border-bottom: 1px solid #d0d7de;
+    }
+    .tb-table tbody td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #eaeef2;
+      vertical-align: middle;
+    }
+    .tb-table tbody tr:hover {
+      background: #f6f8fa;
+    }
+    .tb-env {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tb-env img, .tb-env svg {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+    }
+    .tb-test-link {
+      color: #0969da;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .tb-test-link:hover {
+      text-decoration: underline;
+    }
+    .tb-status {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 12px;
+    }
+    .tb-status.pass {
+      background: #dafbe1;
+      color: #1a7f37;
+    }
+    .tb-status.fail {
+      background: #ffebe9;
+      color: #cf222e;
+    }
+    .tb-status.unknown {
+      background: #eaeef2;
+      color: #57606a;
+    }
+    .tb-status.ignored {
+      background: #fff8c5;
+      color: #7d4e00;
+    }
+    .tb-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: -4px 0 16px;
+    }
+    .tb-env-label {
+      white-space: nowrap;
+    }
+    .tb-muted {
+      color: #57606a;
+      white-space: nowrap;
+    }
+    .tb-pager {
+      padding-left: 0;
+      margin-top: 16px;
+    }
+    .tb-pager a {
+      color: #0969da;
+      text-decoration: none;
+    }
+    .tb-pager a:hover {
+      text-decoration: underline;
+    }
+    .tb-back {
+      display: inline-block;
+      margin-bottom: 12px;
+      color: #0969da;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .tb-back:hover {
+      text-decoration: underline;
+    }
+    .tb-embed {
+      display: block;
+      width: 100%;
+      border: 1px solid #d0d7de;
+      border-radius: 8px;
     }
   </style>
 </head>
