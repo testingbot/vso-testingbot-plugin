@@ -5,8 +5,14 @@
   "version": "0.1.0",
   "publisher": "testingbot",
   "public": true,
-  "description": "Integrate TestingBot's automated testing with Azure DevOps",
+  "description": "Run Selenium, Appium, Espresso, XCUITest and Maestro tests on TestingBot's cloud grid from Azure Pipelines — 6100+ browser/device combinations, physical mobile devices, parallel testing, secure tunnel and app upload.",
   "categories": ["Azure Pipelines", "Azure Test Plans"],
+  "tags": [
+    "Selenium", "Appium", "Espresso", "XCUITest", "Maestro",
+    "cross-browser testing", "test automation", "mobile testing",
+    "cloud testing", "physical devices", "real devices", "browser testing",
+    "continuous integration", "CI/CD", "parallel testing", "TestingBot"
+  ],
   "content": {
     "details": {
       "path": "overview.md"

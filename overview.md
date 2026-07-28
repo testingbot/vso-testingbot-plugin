@@ -1,28 +1,32 @@
-## TestingBot for Visual Studio Team Services Overview
+## TestingBot for Azure DevOps
 
-TestingBot for Visual Studio Team Services (VSTS) enables Continuous Delivery by drastically speeding up your testing cycle while increasing the quality of mobile and web applications.
+Run your **Selenium** and **Appium** tests on the **TestingBot** cloud grid directly from **Azure Pipelines**. TestingBot gives you 6100+ browser and operating-system combinations plus physical iOS and Android devices, so you can run fast, parallel, cross-browser and mobile app tests as part of every Azure DevOps build and release.
 
-TestingBot provides a platform for running your Selenium and Appium tests in the cloud. With over 2000 browser/device combinations, you can test from IE7 to the latest beta/dev builds, from Windows 7 to Windows 10, OSX and iOS/Android. By running your tests in parallel on TestingBot you can finish your automated tests in minutes rather than hours. 
+[Sign up for a free TestingBot trial](https://testingbot.com/signup?utm_source=vsip) to get started.
 
-To get started, please [signup for a free trial on TestingBot](https://testingbot.com/signup?utm_source=vsip).
+### Why TestingBot + Azure DevOps
 
-TestingBot for VSTS allows users to easily communicate with TestingBot during the VSTS build process. The plugin allows users to launch TestingBot Tunnel - a tunnel designed to let customers securely test pre-production apps and apps behind a firewall. 
+- **Cross-browser testing at scale** — 6100+ combinations, from legacy Internet Explorer to the latest Chrome, Firefox, Safari and Edge on Windows and macOS.
+- **Physical mobile devices** — run mobile app tests on real, physical iOS and Android devices for true-to-life results.
+- **Every major mobile framework** — Appium, Espresso, XCUITest and Maestro are all supported for native and hybrid app testing.
+- **Run tests in parallel** — finish your automated test suite in minutes instead of hours by running tests concurrently on the grid.
+- **Any language or framework** — compatible with Selenium and Appium tests written in Java, C#, Python, JavaScript, Ruby, PHP and more.
 
-## Features
-Run your Automated tests much faster on our Selenium and Appium grid. Run tests in parallel on both desktop browsers and mobile devices.
+### What this extension adds to your pipeline
 
-#### Get results faster
-See test results, including a video, screenshots, metadata and logs for each test you run on TestingBot.
+- **TestingBot Configuration (`TBMain`)** — securely injects your TestingBot credentials (`TB_KEY`, `TB_SECRET`) and grid endpoint into your build, so your tests reach the cloud without hardcoding secrets.
+- **Upload App to TestingBot Storage (`TBUploadApp`)** — upload your `.apk`, `.aab`, `.ipa` or `.zip` build straight from the pipeline and get a `tb://` URL to use as your Appium, Espresso, XCUITest or Maestro app under test — ideal for always testing the latest build.
+- **TestingBot Tunnel** — securely test websites and apps on private, staging or firewalled machines. Start it with `TBMain` and stop it with the **Stop TestingBot Tunnel (`TBStopTunnel`)** task.
+- **In-build test results** — a TestingBot tab in the build-results view shows each test's status, browser/OS and duration, with video recordings, logs and screenshots — without leaving Azure DevOps.
 
-#### Compatible
-Compatible with tests written in any language and framework. Use any test runner to run tests. Integrate your CI system to make automated testing a part of your build process.
+### Get results faster
 
-#### Pinpoint issues easily
-Easily locate errors, crashes and problems by watching the video recording, or inspecting the logs and screenshots.
+See test results — including video, screenshots, metadata and logs — for every test you run on TestingBot. Pinpoint errors, crashes and flaky tests by watching the recording or inspecting the logs and screenshots.
 
-#### Easy mobile app uploads
-Upload your mobile app (`.apk`, `.aab`, `.ipa` or `.zip`) straight from your pipeline to TestingBot Storage with the "Upload App to TestingBot Storage" task. It exports the returned `tb://` URL as a pipeline variable so your Appium tests can reference the freshly built app as their `app` capability.
+### Secure by design
 
-#### Security in the cloud
-Each test runs on a pristine, brand new Virtual Machine, which is destroyed after the run, assuring no customer data is exposed to future sessions.
-With TestingBot Tunnel, you can securily test your app and website behind your firewall.
+Each test runs on a pristine, brand-new virtual machine that is destroyed after the run, so no data is exposed to future sessions. With TestingBot Tunnel you can securely test applications behind your firewall.
+
+### Documentation
+
+See the [Azure DevOps integration guide](https://testingbot.com/support/integrations/ci-cd/azure) for step-by-step setup instructions.
