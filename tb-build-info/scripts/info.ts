@@ -350,7 +350,14 @@ function renderResults(
     }
     const envText = document.createElement('span');
     envText.className = 'tb-env-label';
-    const browserLabel = job.browser_version ? `${job.browser} ${job.browser_version}` : job.browser;
+    // The TestingBot API sometimes bakes the version into `browser` (e.g.
+    // "Chrome 150", "IE9"), so only append browser_version when it isn't
+    // already part of the name — avoids "Chrome 150 150" / "IE9 9".
+    const browserName = (job.browser || '').trim();
+    const browserVersion = job.browser_version ? String(job.browser_version).trim() : '';
+    const browserLabel = browserVersion && !browserName.toLowerCase().includes(browserVersion.toLowerCase())
+      ? `${browserName} ${browserVersion}`
+      : browserName;
     envText.textContent = [browserLabel, job.os].filter(Boolean).join(' · ');
     env.appendChild(envText);
     envCell.appendChild(env);
