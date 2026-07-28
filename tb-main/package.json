@@ -9,7 +9,7 @@
     "node": ">=20"
   },
   "dependencies": {
-    "azure-pipelines-task-lib": "^5.277.0",
+    "azure-pipelines-task-lib": "^5.278.0",
     "testingbot-tunnel-launcher": "^1.1.18"
   }
 }
