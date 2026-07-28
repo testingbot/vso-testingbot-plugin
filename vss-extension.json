@@ -19,6 +19,7 @@
     "issues": { "uri": "https://testingbot.com/support" },
     "support": { "uri": "https://testingbot.com/support" },
     "license": { "uri": "https://testingbot.com/terms" },
+    "privacypolicy": { "uri": "https://testingbot.com/privacy" },
     "repository": { "uri": "https://github.com/testingbot/vso-testingbot-plugin" }
   },
   "icons": {
