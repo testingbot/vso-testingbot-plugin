@@ -1,0 +1,42 @@
+# TEMPORARY setup helper — delete this file once you've used it.
+#
+# Prints the Azure DevOps profile ID for the OIDC identity, which you then add
+# as a member of the `testingbot` Marketplace publisher (setup step B3). The
+# runner already has the Azure CLI and authenticates via the federated
+# credential, so no local az install, client secret, or subscription is needed.
+#
+# Prerequisites: the `marketplace` environment must already have the
+# AZURE_CLIENT_ID and AZURE_TENANT_ID secrets (setup Part C).
+#
+# Run it: Actions > "Get publisher id" > Run workflow. Approve the environment
+# gate if prompted, then read the "id" field from the JSON in the step log.
+name: Get publisher id
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write     # mint the GitHub OIDC token for azure/login
+
+jobs:
+  whoami:
+    runs-on: ubuntu-latest
+    environment: marketplace
+    steps:
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
+      - name: Query Azure DevOps profile
+        run: |
+          set -euo pipefail
+          # 499b84ac-... is the well-known Azure DevOps resource id (same for
+          # everyone). The response is just the profile (id/displayName) — no
+          # token — so it is safe to print to the log.
+          az rest \
+            -u https://app.vssps.visualstudio.com/_apis/profile/profiles/me \
+            --resource 499b84ac-1321-427f-aa17-267ca6975798
